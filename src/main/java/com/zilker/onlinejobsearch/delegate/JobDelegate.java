@@ -64,12 +64,12 @@ public class JobDelegate {
 		return comp;
 	}
 
-	public boolean addNewJob(String jobRole, int userId) throws SQLException {
+	public boolean addNewJob(JobMapping jobMapping, int userId) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false ;
 		try {
 			JobDAO jobDao = new JobDAO();
-			flag = jobDao.addNewJob(jobRole, userId);
+			flag = jobDao.addNewJob(jobMapping, userId);
 			return flag;
 		} catch (SQLException e) {
 			throw e;

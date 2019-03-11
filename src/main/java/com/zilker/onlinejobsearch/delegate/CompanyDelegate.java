@@ -177,33 +177,25 @@ public class CompanyDelegate {
 		return flag;
 	}
 
-	public boolean publishVacancy(int userId,int companyId,String jobDesignation,String location,String salary,String count,String description) throws SQLException {
+	public boolean publishVacancy(int userId,int companyId,JobVacancy jobVacancy) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			User user = new User();
-			Company company = new Company();
 			user.setUserId(userId);
-			int jobId = Integer.parseInt(jobDesignation);
-			company.setCompanyId(companyId);
-			company.setJobId(jobId);
-			company.setLocation(location);
-			company.setJobDescription(description);
-			company.setSalary(Float.parseFloat(salary));
-			company.setVacancyCount(Integer.parseInt(count));
-			flag = companyDao.publishVacancy(company, user);
+			jobVacancy.setCompanyId(companyId);
+			flag = companyDao.publishVacancy(jobVacancy, user);
 		} catch (SQLException e) {
 			throw e;
 		}
 		return flag;
 	}
 
-	public void compareVacancyWithRequest(String jobDesignation,String location) throws SQLException {
+	public void compareVacancyWithRequest(int jobId,String location) throws SQLException {
 		// TODO Auto-generated method stub
 		try {
-			Company company = new Company();
-			int jobId = Integer.parseInt(jobDesignation);
+			JobVacancy company = new JobVacancy();
 			company.setJobId(jobId);
 			company.setLocation(location);
 			CompanyDAO companyDao = new CompanyDAO();
@@ -237,60 +229,60 @@ public class CompanyDelegate {
 		return flag;
 	}
 
-	public boolean updateVacancyJobId(Company company, User user) throws SQLException {
+	public boolean updateVacancyJobId(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancyJobId(company, user);
+			flag = companyDao.updateVacancyJobId(jobVacancy, user);
 			return flag;
 		} catch (SQLException e) {
 			throw e;
 		}
 	}
 
-	public boolean updateVacancyLocation(Company company, User user) throws SQLException {
+	public boolean updateVacancyLocation(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancyLocation(company, user);
+			flag = companyDao.updateVacancyLocation(jobVacancy, user);
 			return flag;
 		} catch (SQLException e) {
 			throw e;
 		}
 	}
 
-	public boolean updateVacancyDescription(Company company, User user) throws SQLException {
+	public boolean updateVacancyDescription(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancyDescription(company, user);
+			flag = companyDao.updateVacancyDescription(jobVacancy, user);
 			return flag;
 		} catch (SQLException e) {
 			throw e;
 		}
 	}
 
-	public boolean updateVacancySalary(Company company, User user) throws SQLException {
+	public boolean updateVacancySalary(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancySalary(company, user);
+			flag = companyDao.updateVacancySalary(jobVacancy, user);
 			return flag;
 		} catch (SQLException e) {
 			throw e;
 		}
 	}
 
-	public boolean updateVacancyCount(Company company, User user) throws SQLException {
+	public boolean updateVacancyCount(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancyCount(company, user);
+			flag = companyDao.updateVacancyCount(jobVacancy, user);
 			return flag;
 		} catch (SQLException e) {
 			throw e;

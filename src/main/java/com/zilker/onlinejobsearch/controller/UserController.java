@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,23 +40,6 @@ public class UserController {
 	@Autowired
 	JobDelegate jobDelegate;
 
-	/*
-	 * controller that gets all companies
-	 */
-/////////
-	@GetMapping(value = "/companies")
-	public ModelAndView showLoginPage(HttpServletRequest request, HttpServletResponse response) {
-		ModelAndView model = new ModelAndView("login");
-		try {
-
-			ArrayList<CompanyDetails> displayCompanies = companyDelegate.displayCompanies();
-			model.addObject("companies", displayCompanies);
-			model.addObject("login", new User());
-		} catch (Exception e) {
-			model = new ModelAndView("error");
-		}
-		return model;
-	}
 
 	/*
 	 * controller that does login process and redirects user based on their role

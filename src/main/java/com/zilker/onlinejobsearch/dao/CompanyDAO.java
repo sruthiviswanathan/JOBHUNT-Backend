@@ -30,7 +30,7 @@ public class CompanyDAO {
 	/*
 	 * method for sending notification if a vacancy is published.
 	 */
-	public void compareVacancyWithRequest(Company company) throws SQLException {
+	public void compareVacancyWithRequest(JobVacancy company) throws SQLException {
 			NotifyUser notifyuser = new NotifyUser();
 		try {
 			
@@ -60,7 +60,7 @@ public class CompanyDAO {
 	/*
 	 * method for publishing new vacancy.
 	 */
-	public boolean publishVacancy(Company company, User user) throws SQLException {
+	public boolean publishVacancy(JobVacancy company, User user) throws SQLException {
 		boolean flag = false;
 		try {
 			connection = DButils.getConnection();
@@ -520,7 +520,7 @@ public class CompanyDAO {
 	
 
 
-	public boolean updateVacancyJobId(Company company, User user) throws SQLException {
+	public boolean updateVacancyJobId(JobVacancy company, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -544,7 +544,7 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	public boolean updateVacancyLocation(Company company, User user) throws SQLException {
+	public boolean updateVacancyLocation(JobVacancy company, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -568,7 +568,7 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	public boolean updateVacancyDescription(Company company, User user) throws SQLException {
+	public boolean updateVacancyDescription(JobVacancy company, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -592,7 +592,7 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	public boolean updateVacancySalary(Company company, User user) throws SQLException {
+	public boolean updateVacancySalary(JobVacancy company, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -616,7 +616,7 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	public boolean updateVacancyCount(Company company, User user) throws SQLException {
+	public boolean updateVacancyCount(JobVacancy company, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {

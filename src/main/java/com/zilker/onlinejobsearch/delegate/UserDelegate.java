@@ -15,6 +15,7 @@ import com.zilker.onlinejobsearch.beans.CompanyReviews;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobRequest;
 import com.zilker.onlinejobsearch.beans.JobReviews;
+import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.beans.Technology;
 import com.zilker.onlinejobsearch.beans.User;
 import com.zilker.onlinejobsearch.beans.UserTechnologyMapping;
@@ -586,8 +587,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, String newJobDesignation, String location,
-			String jobDescription, String salary, String count)throws SQLException {
+	public boolean UpdateVacancy(int oldJobId, int companyId, int userId,JobVacancy jobVacancy)throws SQLException {
 		// TODO Auto-generated method stub
 		boolean status =false;
 		try {
@@ -596,41 +596,35 @@ public class UserDelegate {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
 			user.setCurrentTime(dtf.format(now));
-			Company company = new Company();
 			CompanyDelegate companyDelegate = new CompanyDelegate();
-			company.setOldJobId(oldJobId);
+			jobVacancy.setOldJobId(oldJobId);
 			user.setUserId(userId);
-			int newJobId = Integer.parseInt(newJobDesignation);
-			company.setJobId(newJobId);
-			company.setCompanyId(companyId);
-			if (companyDelegate.updateVacancyJobId(company, user)) {
+			jobVacancy.setCompanyId(companyId);
+			if (companyDelegate.updateVacancyJobId(jobVacancy, user)) {
 				
 				status=true;
 			}
-			company.setLocation(location);
-			if (companyDelegate.updateVacancyLocation(company, user)) {
+			
+			if (companyDelegate.updateVacancyLocation(jobVacancy, user)) {
 				
 				status=true;
 			}
 
-			company.setJobDescription(jobDescription);
-			if (companyDelegate.updateVacancyDescription(company, user)) {
+			if (companyDelegate.updateVacancyDescription(jobVacancy, user)) {
 			
 				status=true;
 			}
-			company.setSalary(Float.parseFloat(salary));
-			if (companyDelegate.updateVacancySalary(company, user)) {
+		
+			if (companyDelegate.updateVacancySalary(jobVacancy, user)) {
 				status=true;
 			}
-			int vacancyCount = Integer.parseInt(count);
-			company.setVacancyCount(vacancyCount);
-			if (vacancyCount == 0) {
-				company.setVacancyStatus("expired");
+			if (jobVacancy.getVacancyCount() == 0) {
+				jobVacancy.setVacancyStatus("expired");
 			} else {
-				company.setVacancyStatus("available");
+				jobVacancy.setVacancyStatus("available");
 				
 			}
-			if (companyDelegate.updateVacancyCount(company, user)) {
+			if (companyDelegate.updateVacancyCount(jobVacancy, user)) {
 				
 				status=true;
 			}
