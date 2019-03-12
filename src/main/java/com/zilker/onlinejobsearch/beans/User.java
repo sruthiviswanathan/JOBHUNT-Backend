@@ -7,12 +7,20 @@ package com.zilker.onlinejobsearch.beans;
 public class User {
 
 	private int userId, roleId;
-	private String userName, email, password, company, designation,confirmPassword;
+	private String userName, email, password, company, designation,confirmPassword,skills;
 	private String currentTime;
 	
 	
 	
 	
+	public String getSkills() {
+		return skills;
+	}
+
+	public void setSkills(String skills) {
+		this.skills = skills;
+	}
+
 	public String getConfirmPassword() {
 		return confirmPassword;
 	}
@@ -84,6 +92,6 @@ public class User {
 	public void setDesignation(String designation) {
 		this.designation = designation;
 	}
-
+	
 }
 

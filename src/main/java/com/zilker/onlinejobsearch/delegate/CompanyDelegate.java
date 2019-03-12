@@ -164,18 +164,18 @@ public class CompanyDelegate {
 		return flag;
 	}
 
-	public int addNewCompanyBySiteAdmin(Company company, User user) throws SQLException {
-		// TODO Auto-generated method stub
-		int flag = 0;
-		try {
-			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.addNewCompanyBySiteAdmin(company, user);
-		} catch (SQLException e) {
-			throw e;
-		}
-
-		return flag;
-	}
+//	public int addNewCompanyBySiteAdmin(Company company, User user) throws SQLException {
+//		// TODO Auto-generated method stub
+//		int flag = 0;
+//		try {
+//			CompanyDAO companyDao = new CompanyDAO();
+//			flag = companyDao.addNewCompanyBySiteAdmin(company, user);
+//		} catch (SQLException e) {
+//			throw e;
+//		}
+//
+//		return flag;
+//	}
 
 	public boolean publishVacancy(int userId,int companyId,JobVacancy jobVacancy) throws SQLException {
 		// TODO Auto-generated method stub
@@ -217,17 +217,6 @@ public class CompanyDelegate {
 		return flag;
 	}
 
-	public int deleteCompany(Company company) throws SQLException {
-		// TODO Auto-generated method stub
-		int flag = 0;
-		try {
-			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.deleteCompany(company);
-		} catch (SQLException e) {
-			throw e;
-		}
-		return flag;
-	}
 
 	public boolean updateVacancyJobId(JobVacancy jobVacancy, User user) throws SQLException {
 		// TODO Auto-generated method stub
@@ -326,9 +315,9 @@ public class CompanyDelegate {
 	}
 
 
-	public ArrayList<Company> viewAppliedJobs(int userId) throws SQLException {
+	public ArrayList<ApplyJob> viewAppliedJobs(int userId) throws SQLException {
 		// TODO Auto-generated method stub
-		ArrayList<Company> comp = new ArrayList<Company>();
+		ArrayList<ApplyJob> comp = new ArrayList<ApplyJob>();
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.viewAppliedJobs(userId);

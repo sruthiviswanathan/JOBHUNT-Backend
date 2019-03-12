@@ -10,20 +10,22 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.zilker.onlinejobsearch.beans.Company;
-import com.zilker.onlinejobsearch.beans.CompanyDetails;
+import com.zilker.onlinejobsearch.beans.ApplyJob;
 import com.zilker.onlinejobsearch.beans.JobMapping;
-
+import com.zilker.onlinejobsearch.beans.LoginResponse;
 import com.zilker.onlinejobsearch.beans.User;
-import com.zilker.onlinejobsearch.beans.UserTechnologyMapping;
+import com.zilker.onlinejobsearch.beans.UserDetails;
 import com.zilker.onlinejobsearch.delegate.CompanyDelegate;
 import com.zilker.onlinejobsearch.delegate.JobDelegate;
 import com.zilker.onlinejobsearch.delegate.UserDelegate;
@@ -40,197 +42,124 @@ public class UserController {
 	@Autowired
 	JobDelegate jobDelegate;
 
-
 	/*
 	 * controller that does login process and redirects user based on their role
 	 */
-	@RequestMapping(value = "/users-login", method = RequestMethod.POST)
-	public ModelAndView loginProcess(HttpSession session, @ModelAttribute("login") User user) {
-		ModelAndView model = null;
+	@GetMapping(value = "/users")
+	public ArrayList<LoginResponse> loginProcess(@RequestBody User user) {
+		
+		ArrayList<LoginResponse>loginResponse= null;
 		try {
+			user.setUserId(userDelegate.fetchUserId(user.getEmail()));
+			loginResponse = userDelegate.login(user);
+		}catch(Exception e){
 
-			int role = userDelegate.login(user);
-			int userId = userDelegate.fetchUserId(user.getEmail());
-			String userName = userDelegate.fetchUserNameById(userId);
-			session.setAttribute("email", user.getEmail());
-			session.setAttribute("userName", userName);
-			session.setAttribute("userId", userId);
-
-			if (role == 0) {
-
-				model = new ModelAndView("login");
-				ArrayList<CompanyDetails> displayCompanies = companyDelegate.displayCompanies();
-				model.addObject("companies", displayCompanies);
-				model.addObject("loginError", "error");
-
-			} else if (role == 1) {
-
-				model = new ModelAndView("findjob");
-				ArrayList<CompanyDetails> companyDetails = companyDelegate.displayCompanies();
-				model.addObject("companyList", companyDetails);
-
-			} else if (role == 2) {
-
-				model = new ModelAndView("admin");
-				int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
-				model.addObject("appliedUsers", companyDelegate.numberOfAppliedUsers(companyId));
-				model.addObject("postedJobs", companyDelegate.numberOfVacancyPublished(companyId));
-			}
-
-		} catch (Exception e) {
-			model = new ModelAndView("error");
 		}
-		return model;
+		return loginResponse;
 	}
 
 	/*
 	 * controller that does register process
 	 */
-
 	@PostMapping(value = "/users")
-	public ArrayList<CompanyDetails> registerProcess(@RequestParam("userName") String name, @RequestParam("psw") String password,
-			@RequestParam("cpsw") String confirmPassword, @RequestParam("email") String email,
-			@RequestParam("companyName") String companyName, @RequestParam("designation") String designation,
-			@RequestParam("skillset") String skills, HttpSession session) {
-	
-		ArrayList<CompanyDetails> companyDetails=null;
+	public ArrayList<LoginResponse> registerProcess(@RequestBody User user) {
+		ArrayList<LoginResponse> registerResponse = null;
 		try {
 
-				companyDetails = userDelegate.register(name, email, password, companyName, designation, skills); 	
-				int userId = userDelegate.fetchUserId(email);
-				session.setAttribute("email", email);
-				session.setAttribute("userId", userId);
-				session.setAttribute("userName", name);
+			user.setUserId(userDelegate.fetchUserId(user.getEmail()));
+			registerResponse = userDelegate.register(user);
 			
-
 		} catch (SQLIntegrityConstraintViolationException e) {
+		}
+		catch (Exception e) {
 			
 		}
-
-		catch (Exception e) {
-		
-		}
-		return companyDetails;
+		return registerResponse;
 	}
 
 	/*
 	 * controller for admin registration
 	 */
-	@RequestMapping(value = "/register/admin", method = RequestMethod.POST)
-	public ModelAndView registerAdminProcess(@RequestParam("userName") String name,
-			@RequestParam("psw") String password, @RequestParam("cpsw") String confirmPassword,
-			@RequestParam("email") String email, @RequestParam("companyName") String companyId, HttpSession session) {
-		ModelAndView model = new ModelAndView("admin");
+	@PostMapping(value = "/users-admin")
+	public ArrayList<LoginResponse> registerAdminProcess(@RequestBody User user) {
+		ArrayList<LoginResponse> loginResponse = null;
 		try {
-			if (userDelegate.registerAsAdmin(name, email, password, companyId)) {
-				session.setAttribute("userName", name);
-				session.setAttribute("email", email);
-				int userId = userDelegate.fetchUserId(email);
-				session.setAttribute("userId", userId);
-				model.addObject("registerSuccess", "yes");
-				model.addObject("appliedUsers", companyDelegate.numberOfAppliedUsers(Integer.parseInt(companyId)));
-				model.addObject("postedJobs", companyDelegate.numberOfVacancyPublished(Integer.parseInt(companyId)));
-			}
+			loginResponse = userDelegate.registerAsAdmin(user);
+			
 		} catch (SQLIntegrityConstraintViolationException e) {
-			model = new ModelAndView("signup");
+			
 		} catch (Exception e) {
-			model = new ModelAndView("error");
+			
 		}
-		return model;
+		return loginResponse;
 	}
 
 	/*
 	 * controller for displaying applied jobs to user
 	 */
-	@RequestMapping(value = "/users/appliedjobs", method = RequestMethod.GET)
-	public ModelAndView DisplayAppliedJobs(HttpSession session) {
-		ModelAndView model = new ModelAndView("viewinterestedjobs");
+	@GetMapping(value = "/users/jobs")
+	public ArrayList<ApplyJob> DisplayAppliedJobs(@RequestParam("id") int userId) {
+		ArrayList<ApplyJob> appliedJobs = null;
 		try {
-
-			if (session.getAttribute("email") == null) {
-				model = new ModelAndView("home");
-			} else {
-				int userId = (Integer) session.getAttribute("userId");
-				ArrayList<Company> appliedJobs = companyDelegate.viewAppliedJobs(userId);
-				model.addObject("appliedJobs", appliedJobs);
-			}
-
+				appliedJobs = companyDelegate.viewAppliedJobs(userId);
+		
 		} catch (Exception e) {
-			model = new ModelAndView("error");
+			
 		}
-		return model;
+		return appliedJobs;
 	}
 
 	/*
 	 * logout controller
 	 */
-
-	@RequestMapping(value = "/logout", method = RequestMethod.GET)
-	public ModelAndView Logout(HttpServletRequest request, HttpServletResponse response) {
-		ModelAndView model = new ModelAndView("home");
-		try {
-
-			HttpSession session = request.getSession();
-			if (session != null) {
-
-				response.setHeader("Cache-Control", "no-cache");
-				response.setHeader("Pragma", "no-cache");
-				response.setDateHeader("max-age", 0);
-				response.setDateHeader("Expires", 0);
-				session.invalidate();
-			}
-
-		} catch (Exception e) {
-			model = new ModelAndView("error");
-		}
-		return model;
-	}
+//	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+//	public ModelAndView Logout(HttpServletRequest request, HttpServletResponse response) {
+//		ModelAndView model = new ModelAndView("home");
+//		try {
+//
+//			HttpSession session = request.getSession();
+//			if (session != null) {
+//
+//				response.setHeader("Cache-Control", "no-cache");
+//				response.setHeader("Pragma", "no-cache");
+//				response.setDateHeader("max-age", 0);
+//				response.setDateHeader("Expires", 0);
+//				session.invalidate();
+//			}
+//
+//		} catch (Exception e) {
+//			model = new ModelAndView("error");
+//		}
+//		return model;
+//	}
 
 	/*
 	 * controller for fetching user details and displaying user profile
 	 */
-	@RequestMapping(value = "/users/update", method = RequestMethod.GET)
-	public ModelAndView ViewUsers(HttpSession session) {
-		ModelAndView model = new ModelAndView("viewprofile");
+	@GetMapping(value = "/users/{id}")
+	public ArrayList<UserDetails> ViewUsers(@PathVariable("id")int userId) {
+		ArrayList<UserDetails> userDetails = null;
 		try {
-
-			if (session.getAttribute("email") == null) {
-				model = new ModelAndView("home");
-			} else {
-
-				UserTechnologyMapping userTechnologyMapping = new UserTechnologyMapping();
-				int userId = (Integer) session.getAttribute("userId");
-				ArrayList<User> userList = userDelegate.retrieveUserData(userId);
-				ArrayList<UserTechnologyMapping> userTechnology = userDelegate.displayUserTechnologies(userTechnologyMapping, userId);
-				model.addObject("userData", userList);
-				model.addObject("userTech", userTechnology);
-			}
-
+				userDetails = userDelegate.retrieveUserData(userId);
 		} catch (Exception e) {
-			model = new ModelAndView("error");
+			
 		}
-		return model;
+		return userDetails;
 	}
 
 	/*
 	 * controller for updating user profile
 	 */
-	@RequestMapping(value = "/users/update", method = RequestMethod.POST)
-	public void UpdateUsers(@RequestParam("username") String userName, @RequestParam("cname") String companyName,
-			@RequestParam("designation") String designation, HttpSession session,
-			@RequestParam("skillset") String skills, HttpServletResponse response) throws IOException {
+	@PutMapping(value = "/users/{id}")
+	public void UpdateUsers(@PathVariable("id")int userId,@RequestBody User user,HttpServletResponse response) throws IOException {
 
 		PrintWriter out = response.getWriter();
 		try {
-			if (session.getAttribute("email") == null) {
-				response.sendRedirect("home.jsp");
-			} else {
-				int userId = (Integer) session.getAttribute("userId");
-				if (userDelegate.updateUserProfile(userName, companyName, designation, skills, userId)) {
+				if (userDelegate.updateUserProfile(user, userId)) {
 					out.print("success");
 					out.flush();
 				}
-			}
+			
 		} catch (Exception e) {
 
 			out.print("error");
@@ -242,7 +171,8 @@ public class UserController {
 	 * controller for fetching job designation and displaying request vacancy page
 	 */
 	@RequestMapping(value = "/users/request", method = RequestMethod.GET)
-	public ModelAndView ViewRequestVacancy(HttpServletRequest request, HttpServletResponse response,HttpSession session) {
+	public ModelAndView ViewRequestVacancy(HttpServletRequest request, HttpServletResponse response,
+			HttpSession session) {
 		ModelAndView model = new ModelAndView("requestvacancy");
 		try {
 			if (session.getAttribute("email") == null) {
@@ -271,13 +201,13 @@ public class UserController {
 				String email = (String) session.getAttribute("email");
 				ArrayList<JobMapping> job = jobDelegate.displayJobs();
 				request.setAttribute("jobs", job);
-					if (userDelegate.requestNewVacancy(email, userId, jobDesignation, location, salary)) {
-						out.print("success");
-						out.flush();
-					} else {
-						out.print("error");
-						out.flush();
-					}
+				if (userDelegate.requestNewVacancy(email, userId, jobDesignation, location, salary)) {
+					out.print("success");
+					out.flush();
+				} else {
+					out.print("error");
+					out.flush();
+				}
 			}
 		} catch (Exception e) {
 			out.print("error");

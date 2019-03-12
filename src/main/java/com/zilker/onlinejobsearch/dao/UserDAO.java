@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Repository;
 
 import com.zilker.onlinejobsearch.beans.ApplyJob;
-import com.zilker.onlinejobsearch.beans.Company;
 import com.zilker.onlinejobsearch.beans.CompanyReviews;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobRequest;
@@ -698,7 +697,7 @@ public class UserDAO {
 		return flag;
 	}
 
-	public boolean applyForJob(Company company, User user) throws SQLException{
+	public boolean applyForJob(ApplyJob company, User user) throws SQLException{
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {

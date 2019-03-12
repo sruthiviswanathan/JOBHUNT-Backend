@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
 
-import com.zilker.onlinejobsearch.beans.Company;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.dao.JobDAO;
@@ -39,17 +38,17 @@ public class JobDelegate {
 		}
 	}
 
-	public ArrayList<Company> retrieveVacancyByJob(Company company) throws SQLException {
-		// TODO Auto-generated method stub
-		ArrayList<Company> comp = new ArrayList<Company>();
-		try {
-			JobDAO jobDao = new JobDAO();
-			comp = jobDao.retrieveVacancyByJob(company);
-		} catch (SQLException e) {
-			throw e;
-		}
-		return comp;
-	}
+//	public ArrayList<Company> retrieveVacancyByJob(Company company) throws SQLException {
+//		// TODO Auto-generated method stub
+//		ArrayList<Company> comp = new ArrayList<Company>();
+//		try {
+//			JobDAO jobDao = new JobDAO();
+//			comp = jobDao.retrieveVacancyByJob(company);
+//		} catch (SQLException e) {
+//			throw e;
+//		}
+//		return comp;
+//	}
 
 	
 	public ArrayList<JobVacancy> retrieveVacancyByJob1(int jobId,int userId) throws SQLException {

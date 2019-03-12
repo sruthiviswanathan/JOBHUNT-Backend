@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Repository;
 
-import com.zilker.onlinejobsearch.beans.Company;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.constants.QueryConstants;
@@ -98,32 +97,7 @@ public class JobDAO {
 		}
 	}
 
-	/*
-	 * method 1 for retrieving vacancy based on job.
-	 */
-	public ArrayList<Company> retrieveVacancyByJob(Company company) throws SQLException {
-		ArrayList<Company> comp = new ArrayList<Company>();
-		try {
-
-			connection = DButils.getConnection();
-			preparestatement = connection.prepareStatement(QueryConstants.RETRIEVEJOBDESIGNATION);
-			preparestatement.setInt(1, company.getJobId());
-			resultset = preparestatement.executeQuery();
-			while (resultset.next()) {
-				Company c = new Company();
-				c.setJobRole(resultset.getString(1));
-				comp.add(c);
-			}
-
-		} catch (SQLException e) {
-			throw e;
-
-		} finally {
-			DButils.closeConnection(connection, preparestatement, resultset);
-		}
-		return comp;
-	}
-
+	
 	
 	/*
 	 * method 2 for retrieving vacancy based on job.

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Repository;
 
 import com.zilker.onlinejobsearch.beans.ApplyJob;
-import com.zilker.onlinejobsearch.beans.Company;
 import com.zilker.onlinejobsearch.beans.CompanyDetails;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.beans.User;
@@ -109,30 +108,7 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	/*
-	 * method for adding new company by site admin.
-	 */
-	public int addNewCompanyBySiteAdmin(Company company, User user) throws SQLException {
-		// TODO Auto-generated method stub
-		int flag = 0;
-		try {
-			connection = DButils.getConnection();
-			preparestatement = connection.prepareStatement(QueryConstants.INSERTCOMPANYBYSITEADMIN);
-			preparestatement.setString(1, company.getCompanyName());
-			preparestatement.setString(2, company.getCompanyWebsiteUrl());
-			preparestatement.setInt(3, user.getUserId());
-			preparestatement.setInt(4, user.getUserId());
-			preparestatement.executeUpdate();
-			flag = 1;
-		} catch (SQLException e) {
-			flag = 0;
-			throw e;
-
-		} finally {
-			DButils.closeConnection(connection, preparestatement, resultset);
-		}
-		return flag;
-	}
+	
 
 	/*
 	 * method for fetching company id giving company name as input.
@@ -241,27 +217,6 @@ public class CompanyDAO {
 		return flag;
 	}
 
-	/*
-	 * method for deleting a company.
-	 */
-	public int deleteCompany(Company company) throws SQLException {
-		int flag = 0;
-		try {
-			connection = DButils.getConnection();
-
-			preparestatement = connection.prepareStatement(QueryConstants.DELETECOMPANY);
-			preparestatement.setInt(1, company.getCompanyId());
-			preparestatement.executeUpdate();
-			flag = 1;
-		} catch (SQLException e) {
-
-			throw e;
-		} finally {
-			DButils.closeConnection(connection, preparestatement, resultset);
-		}
-		return flag;
-	}
-	
 	
 	/*
 	 * method 1 for retrieving vacancy based on company.
@@ -438,7 +393,7 @@ public class CompanyDAO {
 			preparestatement1.setInt(1, companyId);
 			resultset1 = preparestatement1.executeQuery();
 			while (resultset1.next()) {
-				Company c = new Company();
+				JobVacancy  c = new JobVacancy();
 				c.setJobDescription(resultset1.getString(4));
 				c.setLocation(resultset1.getString(3));
 				c.setSalary(resultset1.getFloat(5));
@@ -715,22 +670,21 @@ public class CompanyDAO {
 
 	}
 
-	public ArrayList<Company> viewAppliedJobs(int userId)throws SQLException {
+	public ArrayList<ApplyJob> viewAppliedJobs(int userId)throws SQLException {
 		// TODO Auto-generated method stub
-		ArrayList<Company> comp = new ArrayList<Company>();
+		ArrayList<ApplyJob> comp = new ArrayList<ApplyJob>();
 		try {
 			connection = DButils.getConnection();
 			preparestatement = connection.prepareStatement(QueryConstants.VIEWAPPLIEDJOBS);
 			preparestatement.setInt(1, userId);
 			resultset = preparestatement.executeQuery();
 			while (resultset.next()) {
-				Company c = new Company();
+				ApplyJob c = new ApplyJob();
 				c.setCompanyName(resultset.getString(1));
 				c.setJobRole(resultset.getString(2));
 				c.setLocation(resultset.getString(3));
 				comp.add(c);
 						
-
 			}					
 		
 		} catch (SQLException e) {

@@ -1,6 +1,5 @@
 package com.zilker.onlinejobsearch.delegate;
 
-
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,65 +15,65 @@ import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobRequest;
 import com.zilker.onlinejobsearch.beans.JobReviews;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
+import com.zilker.onlinejobsearch.beans.LoginResponse;
 import com.zilker.onlinejobsearch.beans.Technology;
 import com.zilker.onlinejobsearch.beans.User;
+import com.zilker.onlinejobsearch.beans.UserDetails;
 import com.zilker.onlinejobsearch.beans.UserTechnologyMapping;
 import com.zilker.onlinejobsearch.dao.UserDAO;
 
 @Service
 public class UserDelegate {
 
-	public ArrayList<CompanyDetails> register(String name, String email,String password,String companyName,String designation,String skills) throws SQLException {
+	public ArrayList<LoginResponse> register(User user) throws SQLException {
 		// TODO Auto-generated method stub
-		boolean flag = false;
-		ArrayList<CompanyDetails> companyDetails=null;
+
+		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		ArrayList<CompanyDetails> displayCompanies = null;
 		try {
-			User user = new User();
 			CompanyDelegate companyDelegate = new CompanyDelegate();
-			user.setUserName(name);
-			user.setEmail(email);
-			user.setPassword(password);
-			user.setCompany(companyName);
-			user.setDesignation(designation);
+			LoginResponse login = new LoginResponse();
 			UserDAO userdao = new UserDAO();
-			flag = userdao.register(user);
-			int userId = fetchUserId(email);
-			user.setUserId(userId);
-			insertIntoUser(userId,email);
-			addSkillsToProfile(skills,userId);
-			companyDetails = companyDelegate.displayCompanies();
+			if (userdao.register(user)) {
+				int userId = fetchUserId(user.getEmail());
+				insertIntoUser(userId, user.getEmail());
+				addSkillsToProfile(user.getSkills(), userId);
+				displayCompanies = companyDelegate.displayCompanies();
+				login.setUserId(userId);
+				login.setCompanyDetails(displayCompanies);
+				loginResponse.add(login);
+			}
 		} catch (SQLException e) {
 			throw e;
 		}
-		return companyDetails;
+		return loginResponse;
 	}
 
 	public void addTechnologyDetails(UserTechnologyMapping usertechnology) throws SQLException {
 		// TODO Auto-generated method stub
-		
+
 		try {
 			UserDAO userdao = new UserDAO();
 			userdao.addTechnologyDetails(usertechnology);
 		} catch (SQLException e) {
 			throw e;
 		}
-		
+
 	}
 
 	public String fetchUserNameById(int userId) throws SQLException {
 		String userName = "";
 		try {
-			
+
 			UserDAO userDao = new UserDAO();
 			userName = userDao.fetchUserNameById(userId);
-			
+
 			return userName;
 		} catch (SQLException e) {
 			throw e;
-		} 
+		}
 	}
 
-	
 	public int fetchTechnologyId(Technology technology) throws SQLException {
 		// TODO Auto-generated method stub
 		int technologyId = 0;
@@ -87,8 +86,7 @@ public class UserDelegate {
 			throw e;
 		}
 	}
-	
-	
+
 	public int fetchUserId(String email) throws SQLException {
 		int userId = 0;
 		// TODO Auto-generated method stub
@@ -101,19 +99,41 @@ public class UserDelegate {
 		}
 	}
 
-	public int login(User user) throws SQLException {
+	public ArrayList<LoginResponse> login(User user) throws SQLException {
 		// TODO Auto-generated method stub
-		int i = 0;
+		int role = 0;
+		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		ArrayList<CompanyDetails> displayCompanies = null;
+		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
+			LoginResponse login = new LoginResponse();
 			UserDAO userdao = new UserDAO();
-			i = userdao.login(user);
+			CompanyDelegate companyDelegate = new CompanyDelegate();
+			role = userdao.login(user);
+			login.setRole(role);
+			login.setUserId(user.getUserId());
+			if (role == 0) {
+				displayCompanies = companyDelegate.displayCompanies();
+				login.setCompanyDetails(displayCompanies);
+			} else if (role == 1) {
+				displayCompanies = companyDelegate.displayCompanies();
+				login.setCompanyDetails(displayCompanies);
+			} else if (role == 2) {
+
+				int companyId = fetchCompanyIdByAdmin(user.getUserId());
+				admin.add(companyDelegate.numberOfAppliedUsers(companyId));
+				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
+				login.setAdminDetails(admin);
+			}
+			loginResponse.add(login);
 		} catch (SQLException e) {
 			throw e;
 		}
-		return i;
+		return loginResponse;
 	}
 
-	public boolean requestNewVacancy(String email,int userId,String jobId,String location,String salary) throws SQLException {
+	public boolean requestNewVacancy(String email, int userId, String jobId, String location, String salary)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -133,7 +153,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean reviewAndRateCompany(int userId, int companyId,CompanyReviews reviewsRating) throws SQLException {
+	public boolean reviewAndRateCompany(int userId, int companyId, CompanyReviews reviewsRating) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -159,7 +179,7 @@ public class UserDelegate {
 		try {
 			UserDAO userDao = new UserDAO();
 			User user = new User();
-			JobReviews  jobReviews = new JobReviews();
+			JobReviews jobReviews = new JobReviews();
 			JobMapping jobmapping = new JobMapping();
 			JobDelegate jobDelegate = new JobDelegate();
 			int jobId = jobDelegate.fetchJobId(reviews.getJobReviews().getJobRole());
@@ -240,20 +260,25 @@ public class UserDelegate {
 
 		return companies;
 	}
-	
 
-	public ArrayList<User> retrieveUserData(int userId)throws SQLException {
+	public ArrayList<UserDetails> retrieveUserData(int userId) throws SQLException {
 		// TODO Auto-generated method stub
-		ArrayList<User> userData = new ArrayList<User>();
+		ArrayList<UserDetails> userDetails = new ArrayList<UserDetails>();
+		ArrayList<User> userData = null;
 		try {
+			UserDetails user = new UserDetails();
 			UserDAO userDao = new UserDAO();
+			UserTechnologyMapping userTechnologyMapping = new UserTechnologyMapping();
 			userData = userDao.retrieveUserData(userId);
-
+			ArrayList<UserTechnologyMapping> userTechnology = displayUserTechnologies(userTechnologyMapping, userId);
+			user.setUserTechnology(userTechnology);
+			user.setUser(userData);
+			userDetails.add(user);
 		} catch (SQLException e) {
 			throw e;
 		}
 
-		return userData;
+		return userDetails;
 	}
 
 	public boolean ifAlreadyExists(User user) throws SQLException {
@@ -279,40 +304,40 @@ public class UserDelegate {
 		}
 		return flag;
 	}
-	
-	
-	
-	
-	public boolean registerAsAdmin(String name, String email, String password,String companyId) throws SQLException {
+
+	public ArrayList<LoginResponse> registerAsAdmin(User user) throws SQLException {
 		// TODO Auto-generated method stub
-		boolean flag = false;
-		int flag1=0;
+		int flag1 = 0;
+		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
-			User user = new User();
-			CompanyDelegate companyDelegate = new CompanyDelegate(); 
+			CompanyDelegate companyDelegate = new CompanyDelegate();
 			UserDAO userDao = new UserDAO();
-			String companyname = companyDelegate.fetchCompanyName(Integer.parseInt(companyId));
-			user.setUserName(name);
-			user.setEmail(email);
-			user.setPassword(password);
+			LoginResponse login = new LoginResponse();
+			String companyname = companyDelegate.fetchCompanyName(Integer.parseInt(user.getCompany()));
+			int companyId=Integer.parseInt(user.getCompany());
 			user.setCompany(companyname);
 			user.setDesignation("admin");
 			user.setRoleId(2);
-			flag = userDao.registerAsAdmin(user);
-			int userId = fetchUserId(email);
-			insertIntoUser(userId,email);
+			if(userDao.registerAsAdmin(user)) {
+			int userId = fetchUserId(user.getEmail());
+			insertIntoUser(userId,user.getEmail());
 			if (userId != 0) {
-				flag1 = insertIntoAdmin(userId, Integer.parseInt(companyId));
-				companyDelegate.insertIntoCompanyDetails(userId, Integer.parseInt(companyId));
+				flag1 = insertIntoAdmin(userId, companyId);
 				if (flag1 == 1) {
-					flag=true;
+					companyDelegate.insertIntoCompanyDetails(userId, companyId);
 				}
 			}
-
+			admin.add(companyDelegate.numberOfAppliedUsers(companyId));
+			admin.add(companyDelegate.numberOfVacancyPublished(companyId));
+			login.setAdminDetails(admin);
+			login.setUserId(userId);
+			loginResponse.add(login);
+			}
 		} catch (SQLException e) {
 			throw e;
 		}
-		return flag;
+		return loginResponse;
 	}
 
 	public int insertIntoAdmin(int userId, int companyId) throws SQLException {
@@ -327,7 +352,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public void insertIntoUser(int userId,String email) throws SQLException {
+	public void insertIntoUser(int userId, String email) throws SQLException {
 		// TODO Auto-generated method stub
 		try {
 			User user = new User();
@@ -427,7 +452,7 @@ public class UserDelegate {
 		}
 	}
 
-	public int deleteUserAccount(User user)throws SQLException {
+	public int deleteUserAccount(User user) throws SQLException {
 		// TODO Auto-generated method stub
 		int flag = 0;
 		try {
@@ -439,90 +464,92 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean markContacted(int userId,int companyId,int jobId,ApplyJob applyJobs)throws SQLException  {
+	public boolean markContacted(int userId, int companyId, int jobId, ApplyJob applyJobs) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
-		
+
 			UserDAO userDao = new UserDAO();
 			User user = new User();
 			user.setUserId(userId);
 			user.setEmail(applyJobs.getEmail());
-			flag = userDao.markContacted(companyId,jobId,applyJobs,user);
+			flag = userDao.markContacted(companyId, jobId, applyJobs, user);
 		} catch (SQLException e) {
-			
+
 			throw e;
 		}
 		return flag;
 	}
-	
-	public boolean applyForJob(int companyId,int jobId,String location,int userId,String email)throws SQLException  {
+
+	public boolean applyForJob(int companyId, int jobId, String location, int userId, String email)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
-			Company company = new Company();
+			ApplyJob company = new ApplyJob();
 			User user = new User();
 			user.setEmail(email);
 			user.setUserId(userId);
 			company.setCompanyId(companyId);
 			company.setJobId(jobId);
 			company.setLocation(location);
-			flag = userDao.applyForJob(company,user);
+			flag = userDao.applyForJob(company, user);
 		} catch (SQLException e) {
-			
+
 			throw e;
 		}
 		return flag;
 	}
 
-	public boolean deleteTechnologyDetails(UserTechnologyMapping userTechnology, User user)throws SQLException {
+	public boolean deleteTechnologyDetails(UserTechnologyMapping userTechnology, User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
-			flag = userDao.deleteTechnologyDetails(userTechnology,user);
+			flag = userDao.deleteTechnologyDetails(userTechnology, user);
 		} catch (SQLException e) {
 			throw e;
 		}
 		return flag;
 	}
 
-	public void addSkillsToProfile(String skills,int userId) throws SQLException {
+	public void addSkillsToProfile(String skills, int userId) throws SQLException {
 		// TODO Auto-generated method stub
 		try {
-		int technologyId=0;
-		String[] technology;
-		Technology techh = new Technology();
-		UserTechnologyMapping usertechnology = new UserTechnologyMapping();
-		if (skills != "") {
-			technology = skills.split("@");
-			if (technology != null) {
+			int technologyId = 0;
+			String[] technology;
+			Technology techh = new Technology();
+			UserTechnologyMapping usertechnology = new UserTechnologyMapping();
+			if (skills != "") {
+				technology = skills.split("@");
+				if (technology != null) {
 
-				for (int i = 0; i < technology.length; i++) {
+					for (int i = 0; i < technology.length; i++) {
 
-					usertechnology.setUserId(userId);
-					techh.setTechnology(technology[i]);
-					technologyId = fetchTechnologyId(techh);
-					if (technologyId == 0) {
+						usertechnology.setUserId(userId);
 						techh.setTechnology(technology[i]);
-						technologyId = addNewTechnology(techh, userId);
-						usertechnology.setTechnologyId(technologyId);
-						addTechnologyDetails(usertechnology);
-					} else {
-						usertechnology.setTechnologyId(technologyId);
-						addTechnologyDetails(usertechnology);
+						technologyId = fetchTechnologyId(techh);
+						if (technologyId == 0) {
+							techh.setTechnology(technology[i]);
+							technologyId = addNewTechnology(techh, userId);
+							usertechnology.setTechnologyId(technologyId);
+							addTechnologyDetails(usertechnology);
+						} else {
+							usertechnology.setTechnologyId(technologyId);
+							addTechnologyDetails(usertechnology);
+						}
 					}
+
 				}
-
 			}
+		} catch (SQLException e) {
+			throw e;
 		}
-	}catch(SQLException e) {
-		throw e;
 	}
-}
 
-	public boolean updateUserProfile(String userName, String companyName, String designation, String skills,int userId) throws SQLException{
+	public boolean updateUserProfile(User user, int userId)
+			throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -533,28 +560,22 @@ public class UserDelegate {
 			ArrayList<UserTechnologyMapping> userTechnology = null;
 
 			Technology techh = new Technology();
-			User user = new User();
-
 			user.setUserId(userId);
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
 			user.setCurrentTime(dtf.format(now));
-
-			user.setUserName(userName);
 			if (updateUserName(user)) {
 
 			}
-			user.setCompany(companyName);
 			if (updateCompanyName(user)) {
 
 			}
-			user.setDesignation(designation);
 			if (updateUserDesignation(user)) {
 
 			}
 
-			if (skills != "") {
-				technology = skills.split("@");
+			if (user.getSkills() != "") {
+				technology = user.getSkills().split("@");
 				if (technology != null) {
 
 					userTechnology = displayUserTechnologies(userTechnologyMapping, userId);
@@ -580,18 +601,18 @@ public class UserDelegate {
 
 				}
 			}
-			flag= true;
-		}catch(SQLException e) {
+			flag = true;
+		} catch (SQLException e) {
 			throw e;
 		}
 		return flag;
 	}
 
-	public boolean UpdateVacancy(int oldJobId, int companyId, int userId,JobVacancy jobVacancy)throws SQLException {
+	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy) throws SQLException {
 		// TODO Auto-generated method stub
-		boolean status =false;
+		boolean status = false;
 		try {
-			
+
 			User user = new User();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
@@ -601,39 +622,37 @@ public class UserDelegate {
 			user.setUserId(userId);
 			jobVacancy.setCompanyId(companyId);
 			if (companyDelegate.updateVacancyJobId(jobVacancy, user)) {
-				
-				status=true;
+
+				status = true;
 			}
-			
+
 			if (companyDelegate.updateVacancyLocation(jobVacancy, user)) {
-				
-				status=true;
+
+				status = true;
 			}
 
 			if (companyDelegate.updateVacancyDescription(jobVacancy, user)) {
-			
-				status=true;
+
+				status = true;
 			}
-		
+
 			if (companyDelegate.updateVacancySalary(jobVacancy, user)) {
-				status=true;
+				status = true;
 			}
 			if (jobVacancy.getVacancyCount() == 0) {
 				jobVacancy.setVacancyStatus("expired");
 			} else {
 				jobVacancy.setVacancyStatus("available");
-				
+
 			}
 			if (companyDelegate.updateVacancyCount(jobVacancy, user)) {
-				
-				status=true;
+
+				status = true;
 			}
-			
-		}catch(SQLException e) {
+
+		} catch (SQLException e) {
 			throw e;
 		}
 		return status;
 	}
 }
-
-

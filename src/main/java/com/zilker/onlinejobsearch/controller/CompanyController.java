@@ -43,7 +43,7 @@ public class CompanyController {
 	/*
 	 * fetch all company details and display findByJobs page
 	 */
-	@GetMapping("/company")
+	@GetMapping("/companies")
 	public ArrayList<CompanyDetails> DisplayAllCompanies(HttpSession session) {
 		ArrayList<CompanyDetails> companyDetails = null;
 		try {
@@ -157,7 +157,7 @@ public class CompanyController {
 	}
 
 	/*
-	 * controller to fetch applied users
+	 * controller to fetch applied users by admin
 	 */
 	@GetMapping("/applied-users/{id}")
 	public ArrayList<ApplyJob> AppliedUsers(@PathVariable("id") int userId) {
