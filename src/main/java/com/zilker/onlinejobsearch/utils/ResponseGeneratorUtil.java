@@ -41,7 +41,7 @@ public class ResponseGeneratorUtil {
 		
 		public ResponseEntity<?> errorResponse(ApplicationException ex) {
 			ResponseAsObject<ErrorResponse> response = new ResponseAsObject<>();
-			ErrorResponse errorBody = new ErrorResponse(ex.getErrorCode(), ex.getErrorMessage());
+			ErrorResponse errorBody = new ErrorResponse(ex.getErrorCode(),ex.getErrorMessage(),ex.getErrorData());
 			response.setIsSuccess(false);
 			response.setResponseBody(errorBody);
 			return ResponseEntity.ok().body(response);

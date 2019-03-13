@@ -21,37 +21,46 @@ import com.zilker.onlinejobsearch.beans.User;
 import com.zilker.onlinejobsearch.beans.UserDetails;
 import com.zilker.onlinejobsearch.beans.UserTechnologyMapping;
 import com.zilker.onlinejobsearch.customException.ApplicationException;
+import com.zilker.onlinejobsearch.customException.EmailAlreadyExistsException;
 import com.zilker.onlinejobsearch.customException.UserNotFoundException;
 import com.zilker.onlinejobsearch.dao.UserDAO;
 
 @Service
 public class UserDelegate {
 
-	public ArrayList<LoginResponse> register(User user) throws ApplicationException {
+	public LoginResponse register(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
-
-		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		LoginResponse login = new LoginResponse();
 		ArrayList<CompanyDetails> displayCompanies = null;
 		try {
 			CompanyDelegate companyDelegate = new CompanyDelegate();
-			LoginResponse login = new LoginResponse();
+			
 			UserDAO userdao = new UserDAO();
+			displayCompanies = companyDelegate.displayCompanies();
+			login.setCompanyDetails(displayCompanies);
+			if(ifEmailAlreadyExists(user.getEmail())) {
+			 throw 	new EmailAlreadyExistsException();
+			}
+			else {
 			if (userdao.register(user)) {
 				int userId = fetchUserId(user.getEmail());
 				insertIntoUser(userId, user.getEmail());
 				addSkillsToProfile(user.getSkills(), userId);
-				displayCompanies = companyDelegate.displayCompanies();
-				login.setUserId(userId);
-				login.setCompanyDetails(displayCompanies);
-				loginResponse.add(login);
+				login.setUserId(userId);	
 			}
-		return loginResponse;
-	}catch (SQLException e) {
+		
+			}
+	}catch(EmailAlreadyExistsException e) {
+		 e.setErrorData(login);	
+		 throw e;	
+	}
+	catch (SQLException e) {
 		throw new ApplicationException("SQL","SQL Exception");
 	}
 	catch (Exception e) {
 		throw new ApplicationException("EXCEPTION","Exception");
 	}
+		return login;
 }
 
 	public void addTechnologyDetails(UserTechnologyMapping usertechnology) throws SQLException {
@@ -108,14 +117,14 @@ public class UserDelegate {
 		}
 	}
 
-	public ArrayList<LoginResponse> login(User user) throws ApplicationException {
+	public LoginResponse login(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int role = 0;
-		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		LoginResponse login = new LoginResponse();
 		ArrayList<CompanyDetails> displayCompanies = null;
 		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
-			LoginResponse login = new LoginResponse();
+			
 			UserDAO userdao = new UserDAO();
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			role = userdao.login(user);
@@ -135,9 +144,10 @@ public class UserDelegate {
 				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 				login.setAdminDetails(admin);
 			}
-			loginResponse.add(login);
+			
 			
 		}catch(UserNotFoundException e) {
+			 e.setErrorData(login);
 			throw e;
 		}
 		catch (SQLException e) {
@@ -146,11 +156,10 @@ public class UserDelegate {
 		catch (Exception e) {
 			throw new ApplicationException("EXCEPTION","Exception");
 		}
-		return loginResponse;
+		return login;
 	}
 
-	public boolean requestNewVacancy(String email, int userId, JobRequest jobRequest)
-			throws SQLException {
+	public boolean requestNewVacancy(String email, int userId, JobRequest jobRequest) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -159,8 +168,8 @@ public class UserDelegate {
 			user.setUserId(userId);	
 			jobRequest.setEmail(email);			
 			flag = userDao.requestNewVacancy(jobRequest, user);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}
@@ -273,7 +282,7 @@ public class UserDelegate {
 		return companies;
 	}
 
-	public ArrayList<UserDetails> retrieveUserData(int userId) throws SQLException {
+	public ArrayList<UserDetails> retrieveUserData(int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<UserDetails> userDetails = new ArrayList<UserDetails>();
 		ArrayList<User> userData = null;
@@ -286,19 +295,19 @@ public class UserDelegate {
 			user.setUserTechnology(userTechnology);
 			user.setUser(userData);
 			userDetails.add(user);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 
 		return userDetails;
 	}
 
-	public boolean ifEmailAlreadyExists(User user) throws SQLException {
+	public boolean ifEmailAlreadyExists(String email) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
-			flag = userDao.ifEmailAlreadyExists(user);
+			flag = userDao.ifEmailAlreadyExists(email);
 		} catch (SQLException e) {
 			throw e;
 		}
@@ -317,20 +326,29 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public ArrayList<LoginResponse> registerAsAdmin(User user) throws ApplicationException {
+	public LoginResponse registerAsAdmin(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int flag1 = 0;
-		ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		//ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		LoginResponse login = new LoginResponse();
 		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			UserDAO userDao = new UserDAO();
-			LoginResponse login = new LoginResponse();
+			ArrayList<CompanyDetails> displayCompanies = null;
 			String companyname = companyDelegate.fetchCompanyName(Integer.parseInt(user.getCompany()));
 			int companyId=Integer.parseInt(user.getCompany());
 			user.setCompany(companyname);
 			user.setDesignation("admin");
 			user.setRoleId(2);
+			
+			if(ifEmailAlreadyExists(user.getEmail())) {
+				displayCompanies = companyDelegate.displayCompanies();
+				login.setCompanyDetails(displayCompanies);
+				throw new EmailAlreadyExistsException();
+			 
+			}
+			else {
 			if(userDao.registerAsAdmin(user)) {
 			int userId = fetchUserId(user.getEmail());
 			insertIntoUser(userId,user.getEmail());
@@ -344,15 +362,19 @@ public class UserDelegate {
 			admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 			login.setAdminDetails(admin);
 			login.setUserId(userId);
-			loginResponse.add(login);
 			}
-		} catch (SQLException e) {
+			}
+		}catch(EmailAlreadyExistsException e) {
+			 e.setErrorData(login);	
+			 throw e;	
+		}
+		catch (SQLException e) {
 			throw new ApplicationException("SQL","SQL Exception");
 		}
 		catch (Exception e) {
 			throw new ApplicationException("EXCEPTION","Exception");
 		}
-		return loginResponse;
+		return login;
 	}
 
 	public int insertIntoAdmin(int userId, int companyId) throws SQLException {
@@ -380,15 +402,15 @@ public class UserDelegate {
 		}
 	}
 
-	public int fetchCompanyIdByAdmin(int userId) throws SQLException {
+	public int fetchCompanyIdByAdmin(int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int companyId = 0;
 		try {
 			UserDAO userDao = new UserDAO();
 			companyId = userDao.fetchCompanyIdByAdmin(userId);
 			return companyId;
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 	}
 
@@ -563,8 +585,7 @@ public class UserDelegate {
 		}
 	}
 
-	public boolean updateUserProfile(User user, int userId)
-			throws SQLException {
+	public boolean updateUserProfile(User user, int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -617,8 +638,8 @@ public class UserDelegate {
 				}
 			}
 			flag = true;
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}

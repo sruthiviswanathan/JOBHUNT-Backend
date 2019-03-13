@@ -6,6 +6,7 @@ public class EmailAlreadyExistsException extends ApplicationException{
 	
 	private String errorCode="EMAIL_ERR_EXISTS";
 	private String errorMessage="EMAIL ALREADY REGISTERED";
+	private Object errorData;
 	
 	public String getErrorCode() {
 		return errorCode;
@@ -21,6 +22,12 @@ public class EmailAlreadyExistsException extends ApplicationException{
 	}
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+	public Object getErrorData() {
+		return errorData;
+	}
+	public void setErrorData(Object errorData) {
+		this.errorData = errorData;
 	}
 	
 	

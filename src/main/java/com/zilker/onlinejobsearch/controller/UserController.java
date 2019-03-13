@@ -44,14 +44,12 @@ public class UserController {
 	 */
 	@GetMapping(value = "/users")
 	public <T> ResponseEntity<?> loginProcess(@RequestBody User user) {
-		
-		ArrayList<LoginResponse>loginResponse= null;
+		LoginResponse loginResponse = new LoginResponse();
 		try {
 			
 			user.setUserId(userDelegate.fetchUserId(user.getEmail()));
 			loginResponse = userDelegate.login(user);
-			return responseUtil.successResponse(loginResponse);
-		
+			return responseUtil.successResponse(loginResponse);		
 		}
 		catch(ApplicationException e){	
 			return responseUtil.errorResponse(e);
@@ -63,22 +61,17 @@ public class UserController {
 	 * controller that does register process
 	 */
 	@PostMapping(value = "/users")
-	public <T> ResponseEntity<?> registerProcess(@RequestBody User user) {
-		ArrayList<LoginResponse> registerResponse = null;
+	public <T> ResponseEntity<?> registerProcess(@RequestBody User user) {	
+		LoginResponse registerResponse = new LoginResponse();
 		try {
 
 			user.setUserId(userDelegate.fetchUserId(user.getEmail()));
 			registerResponse = userDelegate.register(user);
 			return responseUtil.successResponse(registerResponse);
 			
-		} 
-//		catch (SQLIntegrityConstraintViolationException e) {
-//			
-//			return responseUtil.errorResponse("SQLIntegrityConstraintViolationException","Email Id already Exists");
-//		}
-		catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
-		}
+		} catch(ApplicationException e){	
+		return responseUtil.errorResponse(e);
+	}
 		
 	}
 
@@ -87,23 +80,16 @@ public class UserController {
 	 */
 	@PostMapping(value = "/users-admin")
 	public  <T> ResponseEntity<?> registerAdminProcess(@RequestBody User user) {
-		ArrayList<LoginResponse> loginResponse = null;
+		LoginResponse registerResponse = new LoginResponse();
 		try {
 			
-			loginResponse = userDelegate.registerAsAdmin(user);
-			return responseUtil.successResponse(loginResponse);
-			
+			registerResponse = userDelegate.registerAsAdmin(user);
+			return responseUtil.successResponse(registerResponse);	
 		} 
-//		catch (SQLIntegrityConstraintViolationException e) {
-//			
-//			return responseUtil.errorResponse("SQLIntegrityConstraintViolationException","Email Id already Exists");
-//		
-//		}
-		catch (Exception e) {
-			
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		catch(ApplicationException e){	
+			return responseUtil.errorResponse(e);
 		}
-		
+					
 	}
 
 	/*
@@ -116,9 +102,8 @@ public class UserController {
 				appliedJobs = companyDelegate.viewAppliedJobs(userId);
 				return responseUtil.successResponse(appliedJobs);
 				
-		} catch (Exception e) {
-			
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);			
 		}
 		
 	}
@@ -133,9 +118,8 @@ public class UserController {
 				userDetails = userDelegate.retrieveUserData(userId);
 				return responseUtil.successResponse(userDetails);
 				
-		} catch (Exception e) {
-			
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}		
 	}
 
@@ -151,10 +135,9 @@ public class UserController {
 				}else {
 				return responseUtil.generateMessage("Error");
 				}
-		} catch (Exception e) {
-
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
-		}
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
+		}	
 		
 	}
 
@@ -168,9 +151,9 @@ public class UserController {
 				} else {
 				return responseUtil.generateMessage("Error");
 				}
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
-		}
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
+		}	
 	}
 
 	@GetMapping(value = "/admin")
@@ -181,9 +164,9 @@ public class UserController {
 				admin.add(companyDelegate.numberOfAppliedUsers(companyId));
 				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 				return responseUtil.successResponse(admin);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");	
-		}
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
+		}	
 		
 	}
 

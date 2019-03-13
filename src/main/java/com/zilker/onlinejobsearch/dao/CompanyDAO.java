@@ -167,7 +167,7 @@ public class CompanyDAO {
 	/*
 	 * method for displaying companies.
 	 */
-	public ArrayList<CompanyDetails> displayCompanies() throws SQLException {
+	public ArrayList<CompanyDetails> displayCompanies() throws Exception {
 		ArrayList<CompanyDetails> comp = new ArrayList<CompanyDetails>();
 		try {
 			connection = DButils.getConnection();
@@ -183,7 +183,6 @@ public class CompanyDAO {
 			}
 
 		} catch (SQLException e) {
-
 			throw e;
 		} finally {
 			DButils.closeConnection(connection, preparestatement, resultset);

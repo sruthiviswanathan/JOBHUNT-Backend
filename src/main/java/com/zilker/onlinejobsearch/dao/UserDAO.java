@@ -436,14 +436,13 @@ public class UserDAO {
 		return flag;
 	}
 
-	public boolean ifEmailAlreadyExists(User user) throws SQLException {
+	public boolean ifEmailAlreadyExists(String email) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			connection = DButils.getConnection();
 			statement = connection.createStatement();
 			resultset = statement.executeQuery(QueryConstants.RETRIEVEUSERDATA);
-			String email = user.getEmail();
 			while (resultset.next()) {
 				if (email.equals(resultset.getString(1))) {
 					flag = true;

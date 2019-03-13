@@ -1,7 +1,6 @@
 package com.zilker.onlinejobsearch.controller;
 
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 
@@ -22,6 +21,7 @@ import com.zilker.onlinejobsearch.beans.CompanyDetails;
 import com.zilker.onlinejobsearch.beans.CompanyReviews;
 
 import com.zilker.onlinejobsearch.beans.JobVacancy;
+import com.zilker.onlinejobsearch.customException.ApplicationException;
 import com.zilker.onlinejobsearch.delegate.CompanyDelegate;
 import com.zilker.onlinejobsearch.delegate.JobDelegate;
 import com.zilker.onlinejobsearch.delegate.UserDelegate;
@@ -51,12 +51,13 @@ public class CompanyController {
 		try {
 			companyDetails = companyDelegate.displayCompanies();
 			return responseUtil.successResponse(companyDetails);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch(ApplicationException e){	
+			return responseUtil.errorResponse(e);
 		}
 		
 	}
 
+///exception to be done
 	/*
 	 * controller to add a new company
 	 */
@@ -85,15 +86,11 @@ public class CompanyController {
 		ArrayList<Company> companyDetails = null;
 		try {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
-			if (companyId == 0) {
-				return responseUtil.errorResponse("noCompany","Company is not registered");
-			} else {
-				companyDetails = companyDelegate.retrieveVacancyByCompany(companyId, userId);
-				return responseUtil.successResponse(companyDetails);
-			}
-
-		} catch (SQLException e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+			companyDetails = companyDelegate.retrieveVacancyByCompany(companyId, userId);
+			return responseUtil.successResponse(companyDetails);
+		
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 
 	}
@@ -109,7 +106,7 @@ public class CompanyController {
 			retrieveByLocation = companyDelegate.retrieveVacancyByLocation(location, userId);
 			return responseUtil.successResponse(retrieveByLocation);
 
-		} catch (SQLException e) {
+		} catch (ApplicationException e) {
 			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 	
