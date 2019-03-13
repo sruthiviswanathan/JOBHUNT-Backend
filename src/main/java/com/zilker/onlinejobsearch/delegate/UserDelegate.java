@@ -174,7 +174,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean reviewAndRateCompany(int userId, int companyId, CompanyReviews reviewsRating) throws SQLException {
+	public boolean reviewAndRateCompany(int userId, int companyId, CompanyReviews reviewsRating) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -188,13 +188,13 @@ public class UserDelegate {
 					flag = true;
 				}
 			}
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}
 
-	public boolean interviewProcess(int userId, int companyId, CompanyReviews reviews) throws SQLException {
+	public boolean interviewProcess(int userId, int companyId, CompanyReviews reviews) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -209,8 +209,8 @@ public class UserDelegate {
 			jobReviews.setCompanyId(companyId);
 			jobReviews.setInterviewProcess(reviews.getJobReviews().getInterviewProcess());
 			flag = userDao.interviewProcess(user, jobReviews, jobmapping);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}
@@ -241,7 +241,7 @@ public class UserDelegate {
 
 	}
 
-	public ArrayList<Company> retrieveReview(int companyId) throws SQLException {
+	public ArrayList<Company> retrieveReview(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<Company> companies = new ArrayList<Company>();
 		ArrayList<CompanyReviews> companyReviews = null;
@@ -255,13 +255,13 @@ public class UserDelegate {
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyReviews(companyReviews);
 			companies.add(company);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return companies;
 	}
 
-	public ArrayList<Company> retrieveInterviewProcess(int companyId) throws SQLException {
+	public ArrayList<Company> retrieveInterviewProcess(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<Company> companies = new ArrayList<Company>();
 		ArrayList<CompanyDetails> companyDetails = new ArrayList<CompanyDetails>();
@@ -275,8 +275,8 @@ public class UserDelegate {
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyInterviews(companyInterviews);
 			companies.add(company);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 
 		return companies;
@@ -501,7 +501,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean markContacted(int userId, int companyId, int jobId, ApplyJob applyJobs) throws SQLException {
+	public boolean markContacted(int userId, int companyId, int jobId, ApplyJob applyJobs) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -511,9 +511,8 @@ public class UserDelegate {
 			user.setUserId(userId);
 			user.setEmail(applyJobs.getEmail());
 			flag = userDao.markContacted(companyId, jobId, applyJobs, user);
-		} catch (SQLException e) {
-
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}
@@ -644,7 +643,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy) throws SQLException {
+	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean status = false;
 		try {
@@ -686,8 +685,8 @@ public class UserDelegate {
 				status = true;
 			}
 
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return status;
 	}

@@ -45,7 +45,7 @@ public class CompanyDelegate {
 		} catch (CompanyNotFoundException e) {
 			throw e;
 		}catch(Exception e) {
-			
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return companyId;
 	}
@@ -113,7 +113,7 @@ public class CompanyDelegate {
 		return comp;
 	}
 
-	public ArrayList<Company> retrieveVacancyByCompanyAdmin(int companyId) throws SQLException {
+	public ArrayList<Company> retrieveVacancyByCompanyAdmin(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<Company> companies = new ArrayList<Company>();
 		ArrayList<JobVacancy> vacancies = null;
@@ -127,8 +127,8 @@ public class CompanyDelegate {
 			company.setJobVacancy(vacancies);
 			company.setJobs(job);
 			companies.add(company);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return companies;
 	}
@@ -212,14 +212,14 @@ public class CompanyDelegate {
 		}
 	}
 
-	public boolean removeVacancy(int companyId,int userId,int jobId) throws SQLException {
+	public boolean removeVacancy(int companyId,int userId,int jobId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.removeVacancy(companyId, userId,jobId);
-		} catch (SQLException e) {
-			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return flag;
 	}
@@ -297,14 +297,14 @@ public class CompanyDelegate {
 	}
 
 
-	public ArrayList<ApplyJob> viewAppliedUsers(int companyId)throws SQLException{
+	public ArrayList<ApplyJob> viewAppliedUsers(int companyId)throws ApplicationException{
 		// TODO Auto-generated method stub
 		ArrayList<ApplyJob> comp = new ArrayList<ApplyJob>();
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.viewAppliedUsers(companyId);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException("EXCEPTION","Exception");
 		}
 		return comp;
 	}

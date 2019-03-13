@@ -1,13 +1,7 @@
 package com.zilker.onlinejobsearch.controller;
 
-import java.io.IOException;
-
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-
-
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zilker.onlinejobsearch.beans.ApplyJob;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
+import com.zilker.onlinejobsearch.customException.ApplicationException;
 import com.zilker.onlinejobsearch.delegate.CompanyDelegate;
 import com.zilker.onlinejobsearch.delegate.JobDelegate;
 import com.zilker.onlinejobsearch.delegate.UserDelegate;
@@ -43,7 +38,7 @@ public class JobController {
 	ResponseGeneratorUtil responseUtil;
 	
 	@GetMapping("/jobdesignation/{job}/{id}")
-	public <T> ResponseEntity<?> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) throws IOException {
+	public <T> ResponseEntity<?> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) {
 		ArrayList<JobVacancy> vacancyDetails = null;
 		try {
 				int jobId = jobDelegate.fetchJobId(jobDesignation);
@@ -54,13 +49,13 @@ public class JobController {
 					return responseUtil.successResponse(vacancyDetails);
 				}
 
-		} catch (SQLException e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 		
 	}
 
-	
+///exception to be handled	
 	@PostMapping(value = "/company/jobs/apply")
 	public ResponseEntity<?> ApplyJobs(@RequestParam("id") int userId,@RequestParam("email") String email,@RequestBody ApplyJob applyJobs){
 		try {
@@ -90,8 +85,8 @@ public class JobController {
 		try {
 			job = jobDelegate.displayJobs();
 			return responseUtil.successResponse(job);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -128,7 +123,7 @@ public class JobController {
 				
 					return responseUtil.errorResponse("Error","Error Adding jobDesignation");
 				}
-		} catch (SQLException e) {
+		} catch (ApplicationException e) {
 			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 		

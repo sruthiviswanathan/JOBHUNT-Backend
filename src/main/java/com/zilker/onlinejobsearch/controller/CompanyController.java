@@ -107,7 +107,7 @@ public class CompanyController {
 			return responseUtil.successResponse(retrieveByLocation);
 
 		} catch (ApplicationException e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+			return responseUtil.errorResponse(e);
 		}
 	
 	}
@@ -122,8 +122,8 @@ public class CompanyController {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			reviews = userDelegate.retrieveReview(companyId);
 			return responseUtil.successResponse(reviews);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -137,8 +137,8 @@ public class CompanyController {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			interviewProcess = userDelegate.retrieveInterviewProcess(companyId);
 			return responseUtil.successResponse(interviewProcess);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -157,8 +157,8 @@ public class CompanyController {
 			}else {
 				return responseUtil.generateMessage("Error Adding Review");
 			}
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -173,8 +173,8 @@ public class CompanyController {
 			appliedUsers = companyDelegate.viewAppliedUsers(companyId);
 			return responseUtil.successResponse(appliedUsers);
 
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -192,8 +192,8 @@ public class CompanyController {
 				return responseUtil.generateMessage("Error");
 			}
 
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -207,8 +207,8 @@ public class CompanyController {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			vacancyDetails = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
 			return responseUtil.successResponse(vacancyDetails);
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -231,8 +231,8 @@ public class CompanyController {
 				return responseUtil.generateMessage("Error");
 			}
 
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -254,8 +254,8 @@ public class CompanyController {
 				return responseUtil.generateMessage("Error");
 			}
 
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 }
