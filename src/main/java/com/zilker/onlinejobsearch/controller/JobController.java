@@ -1,15 +1,16 @@
 package com.zilker.onlinejobsearch.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+
+
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.delegate.CompanyDelegate;
 import com.zilker.onlinejobsearch.delegate.JobDelegate;
 import com.zilker.onlinejobsearch.delegate.UserDelegate;
+import com.zilker.onlinejobsearch.utils.ResponseGeneratorUtil;
 
 @RestController
 public class JobController {
@@ -37,97 +39,98 @@ public class JobController {
 	@Autowired
 	CompanyDelegate companyDelegate;
 
+	@Autowired
+	ResponseGeneratorUtil responseUtil;
+	
 	@GetMapping("/jobdesignation/{job}/{id}")
-	public ArrayList<JobVacancy> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) throws IOException {
+	public <T> ResponseEntity<?> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) throws IOException {
 		ArrayList<JobVacancy> vacancyDetails = null;
 		try {
 				int jobId = jobDelegate.fetchJobId(jobDesignation);
 				if (jobId == 0) {
-					
+					return responseUtil.errorResponse("noJobDesignation","invalid job Designation");
 				} else {
-					vacancyDetails = jobDelegate.retrieveVacancyByJob1(jobId, userId);					
+					vacancyDetails = jobDelegate.retrieveVacancyByJob1(jobId, userId);	
+					return responseUtil.successResponse(vacancyDetails);
 				}
 
 		} catch (SQLException e) {
-	
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return vacancyDetails;
+		
 	}
 
 	
 	@PostMapping(value = "/company/jobs/apply")
-	public void ApplyJobs(@RequestParam("id") int userId,@RequestParam("email") String email,@RequestBody ApplyJob applyJobs,HttpServletResponse response)
-			throws IOException {
-		PrintWriter out = response.getWriter();
+	public ResponseEntity<?> ApplyJobs(@RequestParam("id") int userId,@RequestParam("email") String email,@RequestBody ApplyJob applyJobs){
 		try {
-			response.setContentType("text/html;charset=UTF-8");
+			
 			int companyId = companyDelegate.fetchCompanyId(applyJobs.getCompanyName());
 			int jobId = jobDelegate.fetchJobId(applyJobs.getJobRole());
 			if (userDelegate.applyForJob(companyId,jobId,applyJobs.getLocation(),userId,email)) {
-				out.print("success");
-				out.flush();
-			} 
+				return responseUtil.generateMessage("Success");
+			}else { 
+			return responseUtil.generateMessage("Error");
+			}
 		}
 		catch (SQLIntegrityConstraintViolationException e) {
-			out.print("error");
-			out.flush();
+			
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 		catch (Exception e) {
-			out.print("error");
-			out.flush();
+			
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 	}
 
 	
 	@GetMapping(value = "/jobs")
-	public ArrayList<JobMapping> GetAllJobDesignations() {
+	public <T> ResponseEntity<?> GetAllJobDesignations() {
 		ArrayList<JobMapping> job = null;
 		try {
 			job = jobDelegate.displayJobs();
+			return responseUtil.successResponse(job);
 		} catch (Exception e) {
-			
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return job;
 	}
 
 	@PostMapping(value = "/company/vacancy")
-	public void PublishNewVacancy(@RequestParam("id") int userId,@RequestBody JobVacancy jobVacancy,HttpServletResponse response)
-			throws IOException {
-
-		PrintWriter out = response.getWriter();
+	public ResponseEntity<?> PublishNewVacancy(@RequestParam("id") int userId,@RequestBody JobVacancy jobVacancy){
 		try {
 			
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			if (companyDelegate.publishVacancy(userId,companyId,jobVacancy)) {
 				companyDelegate.compareVacancyWithRequest(jobVacancy.getJobId(),jobVacancy.getLocation());
-				out.print("success");
-				out.flush();
-			} 
+				return responseUtil.generateMessage("Success");
+			} else {
 			
+				return responseUtil.generateMessage("Error");
+			}
 		} catch (SQLIntegrityConstraintViolationException e) {
-			out.print("error");
-			out.flush();
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 		catch (Exception e) {
-			out.print("error");
-			out.flush();
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 	}
 
 
 	@PostMapping(value = "/jobs")
-	public ArrayList<JobMapping> AddNewJobDesignation(@RequestParam("id") int userId,@RequestBody JobMapping jobMapping)
-			throws ServletException, IOException {
+	public <T> ResponseEntity<?> AddNewJobDesignation(@RequestParam("id") int userId,@RequestBody JobMapping jobMapping){
 		ArrayList<JobMapping> job = null;
 		try {
 		
 				if (jobDelegate.addNewJob(jobMapping, userId)) {
 					job = jobDelegate.displayJobs();
-				} 
-			
+					return responseUtil.successResponse(job);
+				} else {
+				
+					return responseUtil.errorResponse("Error","Error Adding jobDesignation");
+				}
 		} catch (SQLException e) {
-			
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return job;
+		
 	}
 }

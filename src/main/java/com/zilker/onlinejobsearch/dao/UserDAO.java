@@ -81,7 +81,7 @@ public class UserDAO {
 	/*
 	 * method for logging in.
 	 */
-	public int login(User user) throws SQLException {
+	public int login(User user) throws Exception {
 		try {
 			connection = DButils.getConnection();
 			statement = connection.createStatement();
@@ -98,7 +98,11 @@ public class UserDAO {
 			}
 			return roleId;
 
-		} catch (SQLException e) {
+		}catch (SQLException e) {
+			throw e;
+
+		} 
+		catch (Exception e) {
 			throw e;
 
 		} finally {
@@ -432,7 +436,7 @@ public class UserDAO {
 		return flag;
 	}
 
-	public boolean ifAlreadyExists(User user) throws SQLException {
+	public boolean ifEmailAlreadyExists(User user) throws SQLException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -442,7 +446,6 @@ public class UserDAO {
 			String email = user.getEmail();
 			while (resultset.next()) {
 				if (email.equals(resultset.getString(1))) {
-					System.out.println(email);
 					flag = true;
 					break;
 				}

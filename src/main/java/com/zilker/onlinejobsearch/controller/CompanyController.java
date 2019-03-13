@@ -1,14 +1,12 @@
 package com.zilker.onlinejobsearch.controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +25,7 @@ import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.delegate.CompanyDelegate;
 import com.zilker.onlinejobsearch.delegate.JobDelegate;
 import com.zilker.onlinejobsearch.delegate.UserDelegate;
+import com.zilker.onlinejobsearch.utils.ResponseGeneratorUtil;
 
 @RestController
 public class CompanyController {
@@ -39,158 +38,165 @@ public class CompanyController {
 
 	@Autowired
 	JobDelegate jobDelegate;
+	
+	@Autowired
+	ResponseGeneratorUtil responseUtil;
 
 	/*
 	 * fetch all company details and display findByJobs page
 	 */
 	@GetMapping("/companies")
-	public ArrayList<CompanyDetails> DisplayAllCompanies(HttpSession session) {
+	public <T> ResponseEntity<?> DisplayAllCompanies() {
 		ArrayList<CompanyDetails> companyDetails = null;
 		try {
 			companyDetails = companyDelegate.displayCompanies();
+			return responseUtil.successResponse(companyDetails);
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return companyDetails;
+		
 	}
 
 	/*
 	 * controller to add a new company
 	 */
 	@PostMapping("/companies")
-	public boolean AddNewCompany(@RequestBody CompanyDetails company) {
-		boolean flag = false;
+	public <T> ResponseEntity<?> AddNewCompany(@RequestBody CompanyDetails company) {	
+		ArrayList<CompanyDetails> companyDetails = null;
 		try {
-			flag = companyDelegate.addNewCompany(company);
+			if(companyDelegate.addNewCompany(company)) {
+			companyDetails = companyDelegate.displayCompanies();
+			return responseUtil.successResponse(companyDetails);
+			}else {
+				return responseUtil.generateMessage("Error Adding company");
+			}
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return flag;
+		
 	}
 
 	/*
 	 * controller to retrieve all details and vacancy in company
 	 */
 	@GetMapping("/company/{companyName}/{id}")
-	public ArrayList<Company> findCompany(@PathVariable("companyName") String companyName,
+	public <T> ResponseEntity<?> findCompany(@PathVariable("companyName") String companyName,
 			@PathVariable("id") int userId) {
 		ArrayList<Company> companyDetails = null;
 		try {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			if (companyId == 0) {
-
+				return responseUtil.errorResponse("noCompany","Company is not registered");
 			} else {
 				companyDetails = companyDelegate.retrieveVacancyByCompany(companyId, userId);
+				return responseUtil.successResponse(companyDetails);
 			}
 
 		} catch (SQLException e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return companyDetails;
+
 	}
 
 	/*
 	 * controller to find vacancies by location
 	 */
 	@GetMapping("/location/{location}/{id}")
-	public ArrayList<JobVacancy> findByLocation(@PathVariable("location") String location,
+	public  <T> ResponseEntity<?> findByLocation(@PathVariable("location") String location,
 			@PathVariable("id") int userId) {
 		ArrayList<JobVacancy> retrieveByLocation = null;
 		try {
 			retrieveByLocation = companyDelegate.retrieveVacancyByLocation(location, userId);
+			return responseUtil.successResponse(retrieveByLocation);
 
 		} catch (SQLException e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return retrieveByLocation;
+	
 	}
 
 	/*
 	 * controller to view all reviews of a company
 	 */
 	@GetMapping("/company/reviews/{companyName}")
-	public ArrayList<Company> viewCompanyReviews(@PathVariable("companyName") String companyName) {
+	public <T> ResponseEntity<?> viewCompanyReviews(@PathVariable("companyName") String companyName) {
 		ArrayList<Company> reviews = null;
 		try {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			reviews = userDelegate.retrieveReview(companyId);
-
+			return responseUtil.successResponse(reviews);
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return reviews;
 	}
 
 	/*
 	 * controller to view all reviews of all interview process of a company
 	 */
 	@GetMapping(value = "/company/interviews/{companyName}")
-	public ArrayList<Company> viewReviewsOnInterviewProcess(@PathVariable("companyName") String companyName) {
+	public <T> ResponseEntity<?>  viewReviewsOnInterviewProcess(@PathVariable("companyName") String companyName) {
 		ArrayList<Company> interviewProcess = null;
 		try {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			interviewProcess = userDelegate.retrieveInterviewProcess(companyId);
-
+			return responseUtil.successResponse(interviewProcess);
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return interviewProcess;
 	}
 
 	/*
 	 * controller to rate a company
 	 */
 	@PostMapping(value = "/company/rate")
-	public ArrayList<Company> RateACompany(@RequestParam("id") int userId, @RequestParam("company") String companyName,
+	public <T> ResponseEntity<?> RateACompany(@RequestParam("id") int userId, @RequestParam("company") String companyName,
 			@RequestBody CompanyReviews reviewsRating) {
 		ArrayList<Company> reviews = null;
 		try {
 			int companyId = companyDelegate.fetchCompanyId(companyName);
 			if (userDelegate.reviewAndRateCompany(userId, companyId, reviewsRating)) {
 				reviews = userDelegate.retrieveReview(companyId);
+				return responseUtil.successResponse(reviews);
+			}else {
+				return responseUtil.generateMessage("Error Adding Review");
 			}
-
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return reviews;
 	}
 
 	/*
 	 * controller to fetch applied users by admin
 	 */
 	@GetMapping("/applied-users/{id}")
-	public ArrayList<ApplyJob> AppliedUsers(@PathVariable("id") int userId) {
+	public <T> ResponseEntity<?> AppliedUsers(@PathVariable("id") int userId) {
 		ArrayList<ApplyJob> appliedUsers = null;
 		try {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			appliedUsers = companyDelegate.viewAppliedUsers(companyId);
+			return responseUtil.successResponse(appliedUsers);
 
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return appliedUsers;
 	}
 
 	/*
 	 * controller to mark users as contacted
 	 */
 	@PutMapping(value = "/contacted-users")
-	public void UpdateContactedUsers(@RequestParam("id") int userId, @RequestBody ApplyJob applyJobs,
-			HttpServletResponse response) throws IOException {
-		PrintWriter out = response.getWriter();
+	public ResponseEntity<?> UpdateContactedUsers(@RequestParam("id") int userId, @RequestBody ApplyJob applyJobs){
 		try {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			int jobId = jobDelegate.fetchJobId(applyJobs.getJobRole());
 			if (userDelegate.markContacted(userId, companyId, jobId, applyJobs)) {
-				out.print("success");
-				out.flush();
+				return responseUtil.generateMessage("Success");
+			}else {
+				return responseUtil.generateMessage("Error");
 			}
 
 		} catch (Exception e) {
-
-			out.print("error");
-			out.flush();
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
 	}
 
@@ -198,24 +204,22 @@ public class CompanyController {
 	 * controller to fetch all published jobs by admin
 	 */
 	@GetMapping(value = "company/jobspublished/{id}")
-	public ArrayList<Company> ViewPublishedJobs(@PathVariable("id") int userId) {
+	public <T> ResponseEntity<?> ViewPublishedJobs(@PathVariable("id") int userId) {
 		ArrayList<Company> vacancyDetails = null;
 		try {
-
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			vacancyDetails = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
-
+			return responseUtil.successResponse(vacancyDetails);
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return vacancyDetails;
 	}
 
 	/*
 	 * controller to update published jobs
 	 */
 	@PutMapping(value = "company/jobspublished")
-	public ArrayList<Company> UpdatePublishedJobs(@RequestParam("id") int userId,
+	public <T> ResponseEntity<?> UpdatePublishedJobs(@RequestParam("id") int userId,
 			@RequestParam("jobdesignation") String jobDesignation, @RequestBody JobVacancy jobVacancy) {
 
 		ArrayList<Company> companies = null;
@@ -225,19 +229,21 @@ public class CompanyController {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			if (userDelegate.UpdateVacancy(oldJobId, companyId, userId, jobVacancy)) {
 				companies = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
+				return responseUtil.successResponse(companies);
+			}else {
+				return responseUtil.generateMessage("Error");
 			}
 
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return companies;
 	}
 
 	/*
 	 * controller to update published jobs
 	 */
 	@DeleteMapping(value = "company/jobspublished")
-	public ArrayList<Company> DeletePublishedJobs(@RequestParam("id") int userId,
+	public <T> ResponseEntity<?> DeletePublishedJobs(@RequestParam("id") int userId,
 			@RequestParam("jobdesignation") String jobDesignation) {
 
 		ArrayList<Company> companies = null;
@@ -246,11 +252,13 @@ public class CompanyController {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			if (companyDelegate.removeVacancy(companyId, userId, oldJobId)) {
 				companies = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
+				return responseUtil.successResponse(companies);
+			}else {
+				return responseUtil.generateMessage("Error");
 			}
 
 		} catch (Exception e) {
-
+			return responseUtil.errorResponse("Exception","Oops Exception occured");
 		}
-		return companies;
 	}
 }
