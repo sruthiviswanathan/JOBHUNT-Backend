@@ -12,8 +12,11 @@ import com.zilker.onlinejobsearch.beans.CompanyDetails;
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
 import com.zilker.onlinejobsearch.beans.User;
+import com.zilker.onlinejobsearch.constants.ErrorCodes;
 import com.zilker.onlinejobsearch.customException.ApplicationException;
+import com.zilker.onlinejobsearch.customException.CompanyAlreadyExistsException;
 import com.zilker.onlinejobsearch.customException.CompanyNotFoundException;
+import com.zilker.onlinejobsearch.customException.VacancyAlreadyPublishedException;
 import com.zilker.onlinejobsearch.dao.CompanyDAO;
 
 @Service
@@ -25,8 +28,12 @@ public class CompanyDelegate {
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.displayCompanies();
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		}
+		catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}
@@ -34,37 +41,46 @@ public class CompanyDelegate {
 		
 	public int fetchCompanyId(String companyName) throws ApplicationException {
 		// TODO Auto-generated method stub
+		ArrayList<CompanyDetails> companyDetails = null;
 		int companyId = 0;
 		try {
 
 			CompanyDAO companyDao = new CompanyDAO();
 			companyId = companyDao.fetchCompanyId(companyName);
 			if(companyId == 0) {
+				companyDetails = displayCompanies();
 				throw new CompanyNotFoundException();
 			}
 		} catch (CompanyNotFoundException e) {
+			e.setErrorData(companyDetails);
 			throw e;
-		}catch(Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return companyId;
 	}
 	
 	
-	public String fetchCompanyName(int companyId) throws SQLException {
+	public String fetchCompanyName(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		String companyName="";
 		try {
 
 			CompanyDAO companyDao = new CompanyDAO();
 			companyName = companyDao.fetchCompanyName(companyId);
-			return companyName;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return companyName;
 	}
 
-	public ArrayList<CompanyDetails> retrieveCompanyDetails(int companyId) throws SQLException {
+	public ArrayList<CompanyDetails> retrieveCompanyDetails(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		
 		ArrayList<CompanyDetails> comp = new ArrayList<CompanyDetails>();
@@ -73,7 +89,10 @@ public class CompanyDelegate {
 			comp = companyDao.retrieveVacancyByCompany(companyId);
 			
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}
@@ -93,22 +112,27 @@ public class CompanyDelegate {
 			company.setCompanyDetails(comp);
 			company.setJobVacancy(vacancyDetails);
 			companies.add(company);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return companies;
 	}
 
-//jobvacancy
 	
-	public ArrayList<JobVacancy> retrieveVacancyByCompany1(int companyId,int userId) throws SQLException {
+	public ArrayList<JobVacancy> retrieveVacancyByCompany1(int companyId,int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<JobVacancy> comp = new ArrayList<JobVacancy>();
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.retrieveVacancyByCompany1(companyId,userId);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}
@@ -127,8 +151,11 @@ public class CompanyDelegate {
 			company.setJobVacancy(vacancies);
 			company.setJobs(job);
 			companies.add(company);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return companies;
 	}
@@ -139,8 +166,11 @@ public class CompanyDelegate {
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			count = companyDao.numberOfVacancyPublished(companyId);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return count;
 	}
@@ -151,40 +181,59 @@ public class CompanyDelegate {
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.retrieveVacancyByLocation(location,userId);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}
 
 
-	public boolean addNewCompany(CompanyDetails company) throws SQLException {
+	public boolean addNewCompany(CompanyDetails company) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
+		ArrayList<CompanyDetails> companyDetails = null;
 		try {
+			if(ifCompanyAlreadyExists(company.getCompanyName())) {
+				companyDetails = displayCompanies();
+				throw 	new CompanyAlreadyExistsException();
+			}else {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.addNewCompany(company);
-		} catch (SQLException e) {
+			}
+		}
+		catch (CompanyAlreadyExistsException e) {
+			 e.setErrorData(companyDetails);
 			throw e;
 		}
-
+		catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
 		return flag;
 	}
 
-//	public int addNewCompanyBySiteAdmin(Company company, User user) throws SQLException {
-//		// TODO Auto-generated method stub
-//		int flag = 0;
-//		try {
-//			CompanyDAO companyDao = new CompanyDAO();
-//			flag = companyDao.addNewCompanyBySiteAdmin(company, user);
-//		} catch (SQLException e) {
-//			throw e;
-//		}
-//
-//		return flag;
-//	}
 
-	public boolean publishVacancy(int userId,int companyId,JobVacancy jobVacancy) throws SQLException {
+	private boolean ifCompanyAlreadyExists(String companyName)throws ApplicationException {
+		boolean flag = false;
+		try {
+			CompanyDAO companyDao = new CompanyDAO();
+			flag = companyDao.ifCompanyAlreadyExists(companyName);
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return flag;
+	}
+
+
+	public boolean publishVacancy(int userId,int companyId,JobVacancy jobVacancy) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -192,14 +241,41 @@ public class CompanyDelegate {
 			User user = new User();
 			user.setUserId(userId);
 			jobVacancy.setCompanyId(companyId);
+			if(ifVacancyAlreadyPublished(jobVacancy,user)) {
+				throw new VacancyAlreadyPublishedException();
+			}
+			else {
 			flag = companyDao.publishVacancy(jobVacancy, user);
-		} catch (SQLException e) {
+			}
+		}catch (VacancyAlreadyPublishedException e) {
 			throw e;
+		} 	
+		catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public void compareVacancyWithRequest(int jobId,String location) throws SQLException {
+	private boolean ifVacancyAlreadyPublished(JobVacancy jobVacancy, User user) throws ApplicationException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			CompanyDAO companyDao = new CompanyDAO();
+			flag = companyDao.ifVacancyAlreadyPublished(jobVacancy,user);
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return flag;
+	}
+
+
+	public void compareVacancyWithRequest(int jobId,String location) throws ApplicationException {
 		// TODO Auto-generated method stub
 		try {
 			JobVacancy company = new JobVacancy();
@@ -208,7 +284,10 @@ public class CompanyDelegate {
 			CompanyDAO companyDao = new CompanyDAO();
 			companyDao.compareVacancyWithRequest(company);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
@@ -218,82 +297,102 @@ public class CompanyDelegate {
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.removeVacancy(companyId, userId,jobId);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
 
-	public boolean updateVacancyJobId(JobVacancy jobVacancy, User user) throws SQLException {
+	public boolean updateVacancyJobId(JobVacancy jobVacancy, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.updateVacancyJobId(jobVacancy, user);
-			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return flag;
 	}
 
-	public boolean updateVacancyLocation(JobVacancy jobVacancy, User user) throws SQLException {
+	public boolean updateVacancyLocation(JobVacancy jobVacancy, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.updateVacancyLocation(jobVacancy, user);
-			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return flag;
 	}
 
-	public boolean updateVacancyDescription(JobVacancy jobVacancy, User user) throws SQLException {
+	public boolean updateVacancyDescription(JobVacancy jobVacancy, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.updateVacancyDescription(jobVacancy, user);
-			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return flag;
 	}
 
-	public boolean updateVacancySalary(JobVacancy jobVacancy, User user) throws SQLException {
+	public boolean updateVacancySalary(JobVacancy jobVacancy, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
-			flag = companyDao.updateVacancySalary(jobVacancy, user);
-			return flag;
+			flag = companyDao.updateVacancySalary(jobVacancy, user);	
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return flag;
 	}
 
-	public boolean updateVacancyCount(JobVacancy jobVacancy, User user) throws SQLException {
+	public boolean updateVacancyCount(JobVacancy jobVacancy, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			flag = companyDao.updateVacancyCount(jobVacancy, user);
-			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return flag;
 	}
 
-	public void insertIntoCompanyDetails(int userId, int companyId) throws SQLException {
+	public void insertIntoCompanyDetails(int userId, int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		try {
 			CompanyDAO companyDao = new CompanyDAO();
 			companyDao.insertIntoCompanyDetails(userId, companyId);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
-
 	}
 
 
@@ -304,7 +403,10 @@ public class CompanyDelegate {
 			CompanyDAO companyDao = new CompanyDAO();
 			comp = companyDao.viewAppliedUsers(companyId);
 		} catch (SQLException e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}

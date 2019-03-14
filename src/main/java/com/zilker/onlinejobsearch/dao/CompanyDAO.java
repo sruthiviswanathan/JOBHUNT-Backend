@@ -695,4 +695,51 @@ public class CompanyDAO {
 		return comp;
 	}
 
+	public boolean ifCompanyAlreadyExists(String companyName)throws SQLException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			connection = DButils.getConnection();
+			statement = connection.createStatement();
+			resultset = statement.executeQuery(QueryConstants.RETRIEVECOMPANYDATA);
+			while (resultset.next()) {
+				if (companyName.equalsIgnoreCase(resultset.getString(2))) {
+					flag = true;
+					break;
+				}
+			}
+			return flag;
+
+		} catch (SQLException e) {
+			throw e;
+
+		} finally {
+			DButils.closeConnection(connection, preparestatement, resultset);
+		}
+	}
+
+	public boolean ifVacancyAlreadyPublished(JobVacancy jobVacancy, User user)throws SQLException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			connection = DButils.getConnection();
+			statement = connection.createStatement();
+			resultset = statement.executeQuery(QueryConstants.PUBLISHEDVACANCY);
+			while (resultset.next()) {
+				if (jobVacancy.getCompanyId() == resultset.getInt(1) && jobVacancy.getJobId()
+						== resultset.getInt(2) && jobVacancy.getLocation().equals(resultset.getString(3))) {
+					flag = true;
+					break;
+				}
+			}
+			return flag;
+
+		} catch (SQLException e) {
+			throw e;
+
+		} finally {
+			DButils.closeConnection(connection, preparestatement, resultset);
+		}
+	}
+
 }

@@ -1,6 +1,5 @@
 package com.zilker.onlinejobsearch.controller;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,6 @@ public class JobController {
 		
 	}
 
-///exception to be handled	
 	@PostMapping(value = "/company/jobs/apply")
 	public ResponseEntity<?> ApplyJobs(@RequestParam("id") int userId,@RequestParam("email") String email,@RequestBody ApplyJob applyJobs){
 		try {
@@ -68,13 +66,9 @@ public class JobController {
 			return responseUtil.generateMessage("Error");
 			}
 		}
-		catch (SQLIntegrityConstraintViolationException e) {
-			
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
-		}
-		catch (Exception e) {
-			
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+	
+		catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -102,11 +96,9 @@ public class JobController {
 			
 				return responseUtil.generateMessage("Error");
 			}
-		} catch (SQLIntegrityConstraintViolationException e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
-		}
-		catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} 
+		catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 	}
 
@@ -124,7 +116,7 @@ public class JobController {
 					return responseUtil.errorResponse("Error","Error Adding jobDesignation");
 				}
 		} catch (ApplicationException e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+			return responseUtil.errorResponse(e);
 		}
 		
 	}

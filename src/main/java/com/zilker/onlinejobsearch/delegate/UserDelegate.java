@@ -20,9 +20,11 @@ import com.zilker.onlinejobsearch.beans.Technology;
 import com.zilker.onlinejobsearch.beans.User;
 import com.zilker.onlinejobsearch.beans.UserDetails;
 import com.zilker.onlinejobsearch.beans.UserTechnologyMapping;
+import com.zilker.onlinejobsearch.constants.ErrorCodes;
 import com.zilker.onlinejobsearch.customException.ApplicationException;
 import com.zilker.onlinejobsearch.customException.EmailAlreadyExistsException;
 import com.zilker.onlinejobsearch.customException.UserNotFoundException;
+import com.zilker.onlinejobsearch.customException.VacancyAlreadyAppliedException;
 import com.zilker.onlinejobsearch.dao.UserDAO;
 
 @Service
@@ -34,71 +36,77 @@ public class UserDelegate {
 		ArrayList<CompanyDetails> displayCompanies = null;
 		try {
 			CompanyDelegate companyDelegate = new CompanyDelegate();
-			
+
 			UserDAO userdao = new UserDAO();
 			displayCompanies = companyDelegate.displayCompanies();
 			login.setCompanyDetails(displayCompanies);
-			if(ifEmailAlreadyExists(user.getEmail())) {
-			 throw 	new EmailAlreadyExistsException();
-			}
-			else {
-			if (userdao.register(user)) {
-				int userId = fetchUserId(user.getEmail());
-				insertIntoUser(userId, user.getEmail());
-				addSkillsToProfile(user.getSkills(), userId);
-				login.setUserId(userId);	
-			}
-		
-			}
-	}catch(EmailAlreadyExistsException e) {
-		 e.setErrorData(login);	
-		 throw e;	
-	}
-	catch (SQLException e) {
-		throw new ApplicationException("SQL","SQL Exception");
-	}
-	catch (Exception e) {
-		throw new ApplicationException("EXCEPTION","Exception");
-	}
-		return login;
-}
+			if (ifEmailAlreadyExists(user.getEmail())) {
+				throw new EmailAlreadyExistsException();
+			} else {
+				if (userdao.register(user)) {
+					int userId = fetchUserId(user.getEmail());
+					insertIntoUser(userId, user.getEmail());
+					addSkillsToProfile(user.getSkills(), userId);
+					login.setUserId(userId);
+				}
 
-	public void addTechnologyDetails(UserTechnologyMapping usertechnology) throws SQLException {
+			}
+		} catch (EmailAlreadyExistsException e) {
+			e.setErrorData(login);
+			throw e;
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE, ErrorCodes.SQLERRORMESSAGE);
+		} catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE, ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return login;
+	}
+
+	public void addTechnologyDetails(UserTechnologyMapping usertechnology) throws ApplicationException {
 		// TODO Auto-generated method stub
 
 		try {
 			UserDAO userdao = new UserDAO();
 			userdao.addTechnologyDetails(usertechnology);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 
 	}
 
-	public String fetchUserNameById(int userId) throws SQLException {
+	public String fetchUserNameById(int userId) throws ApplicationException {
 		String userName = "";
 		try {
 
 			UserDAO userDao = new UserDAO();
 			userName = userDao.fetchUserNameById(userId);
-
-			return userName;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return userName;
 	}
 
-	public int fetchTechnologyId(Technology technology) throws SQLException {
+	public int fetchTechnologyId(Technology technology) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int technologyId = 0;
 		// TODO Auto-generated method stub
 		try {
 			UserDAO userDao = new UserDAO();
 			technologyId = userDao.fetchTechnologyId(technology);
-			return technologyId;
+			
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return technologyId;
 	}
 
 	public int fetchUserId(String email) throws ApplicationException {
@@ -106,15 +114,14 @@ public class UserDelegate {
 		// TODO Auto-generated method stub
 		try {
 			UserDAO userDao = new UserDAO();
-			userId = userDao.fetchUserId(email);
-			return userId;
-		}
-		catch (SQLException e) {
-			throw new ApplicationException("SQL","SQL Exception");
-		}
+			userId = userDao.fetchUserId(email);		
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
 		catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
+		return userId;
 	}
 
 	public LoginResponse login(User user) throws ApplicationException {
@@ -124,7 +131,7 @@ public class UserDelegate {
 		ArrayList<CompanyDetails> displayCompanies = null;
 		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
-			
+
 			UserDAO userdao = new UserDAO();
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			role = userdao.login(user);
@@ -144,17 +151,15 @@ public class UserDelegate {
 				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 				login.setAdminDetails(admin);
 			}
-			
-			
-		}catch(UserNotFoundException e) {
-			 e.setErrorData(login);
+
+		} catch (UserNotFoundException e) {
+			e.setErrorData(login);
 			throw e;
-		}
-		catch (SQLException e) {
-			throw new ApplicationException("SQL","SQL Exception");
-		}
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
 		catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return login;
 	}
@@ -164,17 +169,21 @@ public class UserDelegate {
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
-			User user = new User();	
-			user.setUserId(userId);	
-			jobRequest.setEmail(email);			
+			User user = new User();
+			user.setUserId(userId);
+			jobRequest.setEmail(email);
 			flag = userDao.requestNewVacancy(jobRequest, user);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public boolean reviewAndRateCompany(int userId, int companyId, CompanyReviews reviewsRating) throws ApplicationException {
+	public boolean reviewAndRateCompany(int userId, int companyId, CompanyReviews reviewsRating)
+			throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -188,8 +197,11 @@ public class UserDelegate {
 					flag = true;
 				}
 			}
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
@@ -209,25 +221,31 @@ public class UserDelegate {
 			jobReviews.setCompanyId(companyId);
 			jobReviews.setInterviewProcess(reviews.getJobReviews().getInterviewProcess());
 			flag = userDao.interviewProcess(user, jobReviews, jobmapping);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public int checkPasswordBeforeDelete(User user) throws SQLException {
+	public int checkPasswordBeforeDelete(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int flag = 0;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.checkPasswordBeforeDelete(user);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public ArrayList<Technology> displayTechnologies(Technology technology) throws SQLException {
+	public ArrayList<Technology> displayTechnologies(Technology technology) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<Technology> tech = new ArrayList<Technology>();
 		try {
@@ -235,7 +253,10 @@ public class UserDelegate {
 			tech = userDao.displayTechnologies(technology);
 
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return tech;
 
@@ -255,8 +276,11 @@ public class UserDelegate {
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyReviews(companyReviews);
 			companies.add(company);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return companies;
 	}
@@ -275,8 +299,11 @@ public class UserDelegate {
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyInterviews(companyInterviews);
 			companies.add(company);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 
 		return companies;
@@ -295,33 +322,41 @@ public class UserDelegate {
 			user.setUserTechnology(userTechnology);
 			user.setUser(userData);
 			userDetails.add(user);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
-
 		return userDetails;
 	}
 
-	public boolean ifEmailAlreadyExists(String email) throws SQLException {
+	public boolean ifEmailAlreadyExists(String email) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.ifEmailAlreadyExists(email);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public boolean ifTechnologyIdExists(Technology technology) throws SQLException {
+	public boolean ifTechnologyIdExists(Technology technology) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.ifTechnologyIdExists(technology);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
@@ -329,7 +364,7 @@ public class UserDelegate {
 	public LoginResponse registerAsAdmin(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int flag1 = 0;
-		//ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
+		// ArrayList<LoginResponse> loginResponse = new ArrayList<LoginResponse>();
 		LoginResponse login = new LoginResponse();
 		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
@@ -337,59 +372,60 @@ public class UserDelegate {
 			UserDAO userDao = new UserDAO();
 			ArrayList<CompanyDetails> displayCompanies = null;
 			String companyname = companyDelegate.fetchCompanyName(Integer.parseInt(user.getCompany()));
-			int companyId=Integer.parseInt(user.getCompany());
+			int companyId = Integer.parseInt(user.getCompany());
 			user.setCompany(companyname);
 			user.setDesignation("admin");
 			user.setRoleId(2);
-			
-			if(ifEmailAlreadyExists(user.getEmail())) {
+
+			if (ifEmailAlreadyExists(user.getEmail())) {
 				displayCompanies = companyDelegate.displayCompanies();
 				login.setCompanyDetails(displayCompanies);
 				throw new EmailAlreadyExistsException();
-			 
-			}
-			else {
-			if(userDao.registerAsAdmin(user)) {
-			int userId = fetchUserId(user.getEmail());
-			insertIntoUser(userId,user.getEmail());
-			if (userId != 0) {
-				flag1 = insertIntoAdmin(userId, companyId);
-				if (flag1 == 1) {
-					companyDelegate.insertIntoCompanyDetails(userId, companyId);
+
+			} else {
+				if (userDao.registerAsAdmin(user)) {
+					int userId = fetchUserId(user.getEmail());
+					insertIntoUser(userId, user.getEmail());
+					if (userId != 0) {
+						flag1 = insertIntoAdmin(userId, companyId);
+						if (flag1 == 1) {
+							companyDelegate.insertIntoCompanyDetails(userId, companyId);
+						}
+					}
+					admin.add(companyDelegate.numberOfAppliedUsers(companyId));
+					admin.add(companyDelegate.numberOfVacancyPublished(companyId));
+					login.setAdminDetails(admin);
+					login.setUserId(userId);
 				}
 			}
-			admin.add(companyDelegate.numberOfAppliedUsers(companyId));
-			admin.add(companyDelegate.numberOfVacancyPublished(companyId));
-			login.setAdminDetails(admin);
-			login.setUserId(userId);
-			}
-			}
-		}catch(EmailAlreadyExistsException e) {
-			 e.setErrorData(login);	
-			 throw e;	
-		}
-		catch (SQLException e) {
-			throw new ApplicationException("SQL","SQL Exception");
-		}
+		} catch (EmailAlreadyExistsException e) {
+			e.setErrorData(login);
+			throw e;
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
 		catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return login;
 	}
 
-	public int insertIntoAdmin(int userId, int companyId) throws SQLException {
+	public int insertIntoAdmin(int userId, int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int flag = 0;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.insertIntoAdmin(userId, companyId);
-		} catch (SQLException e) {
-			throw e;
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public void insertIntoUser(int userId, String email) throws SQLException {
+	public void insertIntoUser(int userId, String email) throws ApplicationException {
 		// TODO Auto-generated method stub
 		try {
 			User user = new User();
@@ -398,7 +434,10 @@ public class UserDelegate {
 			user.setEmail(email);
 			userDao.insertIntoUser(user);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
@@ -409,12 +448,15 @@ public class UserDelegate {
 			UserDAO userDao = new UserDAO();
 			companyId = userDao.fetchCompanyIdByAdmin(userId);
 			return companyId;
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
-	public boolean updateUserName(User user) throws SQLException {
+	public boolean updateUserName(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -422,11 +464,14 @@ public class UserDelegate {
 			flag = userDao.updateUserName(user);
 			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
-	public boolean updateCompanyName(User user) throws SQLException {
+	public boolean updateCompanyName(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -434,38 +479,46 @@ public class UserDelegate {
 			flag = userDao.updateCompanyName(user);
 			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
-	public boolean updateUserDesignation(User user) throws SQLException {
+	public boolean updateUserDesignation(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
-			;
 			flag = userDao.updateUserDesignation(user);
 			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
 	public ArrayList<UserTechnologyMapping> displayUserTechnologies(UserTechnologyMapping userTechnologyMapping,
-			int userId) throws SQLException {
+			int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		ArrayList<UserTechnologyMapping> usertechnology = new ArrayList<UserTechnologyMapping>();
 		try {
 			UserDAO userDao = new UserDAO();
 			usertechnology = userDao.displayUserTechnologies(userTechnologyMapping, userId);
 
-		} catch (SQLException e) {
-			throw e;
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return usertechnology;
 	}
 
-	public boolean updateUserTechnology(UserTechnologyMapping userTechnologyMapping, User user) throws SQLException {
+	public boolean updateUserTechnology(UserTechnologyMapping userTechnologyMapping, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -473,11 +526,14 @@ public class UserDelegate {
 			flag = userDao.updateUserTechnology(userTechnologyMapping, user);
 			return flag;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
-	public int addNewTechnology(Technology technology, int userId) throws SQLException {
+	public int addNewTechnology(Technology technology, int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int technologyId = 0;
 		try {
@@ -485,18 +541,24 @@ public class UserDelegate {
 			technologyId = userDao.addNewTechnology(technology, userId);
 			return technologyId;
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
-	public int deleteUserAccount(User user) throws SQLException {
+	public int deleteUserAccount(User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		int flag = 0;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.deleteUserAccount(user);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
@@ -511,14 +573,17 @@ public class UserDelegate {
 			user.setUserId(userId);
 			user.setEmail(applyJobs.getEmail());
 			flag = userDao.markContacted(companyId, jobId, applyJobs, user);
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
 	public boolean applyForJob(int companyId, int jobId, String location, int userId, String email)
-			throws SQLException {
+			throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
@@ -530,27 +595,53 @@ public class UserDelegate {
 			company.setCompanyId(companyId);
 			company.setJobId(jobId);
 			company.setLocation(location);
-			flag = userDao.applyForJob(company, user);
-		} catch (SQLException e) {
-
+			if (ifAlreadyAppliedJob(company, user)) {
+				throw new VacancyAlreadyAppliedException();
+			} else {
+				flag = userDao.applyForJob(company, user);
+			}
+		} catch (VacancyAlreadyAppliedException e) {
 			throw e;
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public boolean deleteTechnologyDetails(UserTechnologyMapping userTechnology, User user) throws SQLException {
+	private boolean ifAlreadyAppliedJob(ApplyJob company, User user) throws ApplicationException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			UserDAO userDao = new UserDAO();
+			flag = userDao.ifAlreadyAppliedJob(company, user);
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return flag;
+	}
+
+	public boolean deleteTechnologyDetails(UserTechnologyMapping userTechnology, User user) throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			UserDAO userDao = new UserDAO();
 			flag = userDao.deleteTechnologyDetails(userTechnology, user);
 		} catch (SQLException e) {
-			throw e;
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public void addSkillsToProfile(String skills, int userId) throws SQLException {
+	public void addSkillsToProfile(String skills, int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
 		try {
 			int technologyId = 0;
@@ -579,8 +670,9 @@ public class UserDelegate {
 
 				}
 			}
-		} catch (SQLException e) {
-			throw e;
+		}
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 	}
 
@@ -637,13 +729,15 @@ public class UserDelegate {
 				}
 			}
 			flag = true;
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}
 
-	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy) throws ApplicationException {
+	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy)
+			throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean status = false;
 		try {
@@ -685,8 +779,9 @@ public class UserDelegate {
 				status = true;
 			}
 
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return status;
 	}

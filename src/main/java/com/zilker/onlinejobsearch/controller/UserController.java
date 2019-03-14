@@ -39,6 +39,8 @@ public class UserController {
 
 	@Autowired
 	ResponseGeneratorUtil responseUtil;
+	
+	
 	/*
 	 * controller that does login process and redirects user based on their role
 	 */

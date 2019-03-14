@@ -774,6 +774,30 @@ public class UserDAO {
 		return flag;
 	}
 
+	public boolean ifAlreadyAppliedJob(ApplyJob company,User user) throws SQLException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			connection = DButils.getConnection();
+			statement = connection.createStatement();
+			resultset = statement.executeQuery(QueryConstants.APPLIEDJOBS);
+			while (resultset.next()) {
+				if (user.getUserId()==resultset.getInt(1) && company.getCompanyId() == resultset.getInt(2) && company.getJobId()
+						== resultset.getInt(3) && company.getLocation().equals(resultset.getString(4))) {
+					flag = true;
+					break;
+				}
+			}
+			return flag;
+
+		} catch (SQLException e) {
+			throw e;
+
+		} finally {
+			DButils.closeConnection(connection, preparestatement, resultset);
+		}
+	}
+
 	
 
 	

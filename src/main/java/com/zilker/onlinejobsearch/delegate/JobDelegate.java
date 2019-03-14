@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.zilker.onlinejobsearch.beans.JobMapping;
 import com.zilker.onlinejobsearch.beans.JobVacancy;
+import com.zilker.onlinejobsearch.constants.ErrorCodes;
 import com.zilker.onlinejobsearch.customException.ApplicationException;
+import com.zilker.onlinejobsearch.customException.JobDesignationAlreadyExistsException;
 import com.zilker.onlinejobsearch.customException.JobDesignationNotFoundException;
 import com.zilker.onlinejobsearch.dao.JobDAO;
 
@@ -22,8 +24,11 @@ public class JobDelegate {
 			JobDAO jobDao = new JobDAO();
 			job = jobDao.displayJobs();
 
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return job;
 	}
@@ -37,16 +42,16 @@ public class JobDelegate {
 			if(jobId == 0) {
 				throw new JobDesignationNotFoundException();
 			}
-			return jobId;
 		} 
 		catch (JobDesignationNotFoundException e) {
 			throw e;
 		}catch (SQLException e) {
-			throw new ApplicationException("SQL","SQL Exception");
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
-		catch(Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
-		}
+		return jobId;
 	}
 	
 	public ArrayList<JobVacancy> retrieveVacancyByJob1(int jobId,int userId) throws ApplicationException {
@@ -56,35 +61,66 @@ public class JobDelegate {
 			JobDAO jobDao = new JobDAO();
 			comp = jobDao.retrieveVacancyByJob1(jobId,userId);
 		} catch (SQLException e) {
-			throw new ApplicationException("SQL","SQL Exception");
-		}
-		catch(Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return comp;
 	}
 
 	public boolean addNewJob(JobMapping jobMapping, int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
+		ArrayList<JobMapping> job = null;
 		boolean flag = false ;
 		try {
+			if(ifJobDesignationAlreadyExists(jobMapping.getJobRole())) {	
+				job = displayJobs();
+				throw new JobDesignationAlreadyExistsException();
+			}
+			else {
 			JobDAO jobDao = new JobDAO();
 			flag = jobDao.addNewJob(jobMapping, userId);
-			return flag;
-		} catch (Exception e) {
-			throw new ApplicationException("EXCEPTION","Exception");
+			}
+		} catch (JobDesignationAlreadyExistsException e) {
+			 e.setErrorData(job);
+			throw e;
 		}
-
+		catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return flag;
 	}
 
-	public boolean ifJobIdExists(JobMapping jobmapping) throws SQLException{
+	private boolean ifJobDesignationAlreadyExists(String jobRole)throws ApplicationException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			JobDAO jobDao = new JobDAO();
+			flag = jobDao.ifJobDesignationAlreadyExists(jobRole);
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
+		}
+		return flag;
+	}
+
+	public boolean ifJobIdExists(JobMapping jobmapping) throws ApplicationException{
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		try {
 			JobDAO jobDao = new JobDAO();
 			flag = jobDao.ifTechnologyIdExists(jobmapping);
-		} catch (SQLException e) {
-			throw e;
+		}catch (SQLException e) {
+			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
+		} 
+		catch (Exception e) {
+			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 		return flag;
 	}

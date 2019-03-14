@@ -27,6 +27,8 @@ public class QueryConstants {
 	public static final String RETRIEVEVACANCYBYCOMPID ="select c.company_name,v.job_id,v.location,v.job_description,v.salary,v.vacancy_count from vacancy_publish v ,company_details c where v.company_id = ? and c.company_id=v.company_id and vacancy_status='available'";
 	public static final String APPLYFORJOB ="insert into applyforjob(user_id,email,company_id,job_id,location,created_by,updated_by) values(?,?,?,?,?,?,?)";
 	public static final String MARKCONTACTED ="update applyforjob set contacted=?, created_by=? ,updated_by=? where company_id=? and job_id=? and location=? and email=?";
+	public static final String APPLIEDJOBS="select user_id,company_id,job_id,location from applyforjob";
+	public static final String PUBLISHEDVACANCY="select company_id,job_id,location from vacancy_publish";
 	public static final String VIEWAPPLIEDUSERS="select user_classification.user_name,company_id,job.job_designation,applyforjob.email,applyforjob.location,applyforjob.contacted from applyforjob,user_classification,job where company_id=? and user_classification.user_id=applyforjob.user_id and applyforjob.job_id = job.job_id";
 	public static final String VIEWAPPLIEDJOBS="select company_details.company_name,job.job_designation,applyforjob.location from applyforjob,company_details,job where user_id = ? and company_details.company_id=applyforjob.company_id and applyforjob.job_id = job.job_id"; 
 	public static final String RETRIEVEVACANCYADMIN = "select company_id,job_id,location,job_description,salary,vacancy_count from vacancy_publish where company_id=?";

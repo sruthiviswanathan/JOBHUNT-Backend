@@ -9,7 +9,7 @@ public class UserNotFoundException extends ApplicationException  {
 	
 	private String errorCode="USER_ERR";
 	private String errorMessage="USER NOT FOUND";
-	private Object errorData;
+	
 	
 	public String getErrorCode() {
 		return errorCode;
@@ -27,12 +27,7 @@ public class UserNotFoundException extends ApplicationException  {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-	public Object getErrorData() {
-		return errorData;
-	}
-	public void setErrorData(Object errorData) {
-		this.errorData = errorData;
-	}
+
 
 	
 	

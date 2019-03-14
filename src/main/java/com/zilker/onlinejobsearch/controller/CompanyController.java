@@ -57,7 +57,6 @@ public class CompanyController {
 		
 	}
 
-///exception to be done
 	/*
 	 * controller to add a new company
 	 */
@@ -65,14 +64,16 @@ public class CompanyController {
 	public <T> ResponseEntity<?> AddNewCompany(@RequestBody CompanyDetails company) {	
 		ArrayList<CompanyDetails> companyDetails = null;
 		try {
+			
+			
 			if(companyDelegate.addNewCompany(company)) {
 			companyDetails = companyDelegate.displayCompanies();
 			return responseUtil.successResponse(companyDetails);
 			}else {
 				return responseUtil.generateMessage("Error Adding company");
 			}
-		} catch (Exception e) {
-			return responseUtil.errorResponse("Exception","Oops Exception occured");
+		} catch (ApplicationException e) {
+			return responseUtil.errorResponse(e);
 		}
 		
 	}

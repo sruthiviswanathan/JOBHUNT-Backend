@@ -188,5 +188,28 @@ public class JobDAO {
 		}
 	}
 
+	public boolean ifJobDesignationAlreadyExists(String jobRole)throws SQLException {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		try {
+			connection = DButils.getConnection();
+			statement = connection.createStatement();
+			resultset = statement.executeQuery(QueryConstants.RETRIEVEJOBDATA);
+			while (resultset.next()) {
+				if (jobRole.equalsIgnoreCase(resultset.getString(2))) {
+					flag = true;
+					break;
+				}
+			}
+			return flag;
+
+		} catch (SQLException e) {
+			throw e;
+
+		} finally {
+			DButils.closeConnection(connection, preparestatement, resultset);
+		}
+	}
+
 }
 
