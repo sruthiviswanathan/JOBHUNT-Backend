@@ -23,7 +23,7 @@ public class QueryConstants {
 	public static final String RETRIEVETECHNOLOGYID = "select technology_id,technology from technology where technology=?";
 	public static final String INSERTVACANCY = "insert into vacancy_publish(company_id,job_id,location,job_description,salary,vacancy_count,created_by,updated_by) values(?,?,?,?,?,?,?,?)";
 	public static final String INSERTJOB = "insert into job(job_designation,created_by,updated_by)" + "values(?,?,?)";
-	public static final String DELETEVACANCY = "update vacancy_publish set vacancy_count=0 ,vacancy_status='expired',updated_by=? where company_id=? and job_id=?";
+	public static final String DELETEVACANCY = "update vacancy_publish set vacancy_count=0 ,vacancy_status='expired',updated_by=? where company_id=? and job_id=? and location=?";
 	public static final String RETRIEVEVACANCYBYCOMPID ="select c.company_name,v.job_id,v.location,v.job_description,v.salary,v.vacancy_count from vacancy_publish v ,company_details c where v.company_id = ? and c.company_id=v.company_id and vacancy_status='available'";
 	public static final String APPLYFORJOB ="insert into applyforjob(user_id,email,company_id,job_id,location,created_by,updated_by) values(?,?,?,?,?,?,?)";
 	public static final String MARKCONTACTED ="update applyforjob set contacted=?, created_by=? ,updated_by=? where company_id=? and job_id=? and location=? and email=?";
@@ -55,11 +55,11 @@ public class QueryConstants {
 	public static final String UPDATEUSERDESIGNATION = "update user_classification set designation=?,updated_by=?,update_timestamp=? where user_id=?";
 	public static final String RETRIEVEUSERTECHNOLOGY = "select t.technology from user_technology_mapping,technology t where user_id=? and user_technology_mapping.technology_id=t.technology_id";
 	public static final String UPDATEUSERTECHNOLOGY = "update user_technology_mapping set technology_id=?,updated_by=?,update_timestamp=? where user_id=? and technology_id=?";
-	public static final String UPDATEVACANCYDESIGNATION = "update vacancy_publish set job_id=?,updated_by=?,update_timestamp=? where company_id=? and job_id=?";
-	public static final String UPDATEVACANCYLOCATION = "update vacancy_publish set location=?,updated_by=?,update_timestamp=? where company_id=? and job_id=?";
-	public static final String UPDATEVACANCYDESCRIPTION = "update vacancy_publish set job_description=?,updated_by=?,update_timestamp=? where company_id=? and job_id=?";
-	public static final String UPDATEVACANCYSALARY = "update vacancy_publish set salary=?,updated_by=?,update_timestamp=? where company_id=? and job_id=?";
-	public static final String UPDATEVACANCYCOUNT = "update vacancy_publish set vacancy_count=?,vacancy_status=?,updated_by=?,update_timestamp=? where company_id=? and job_id=?";
+	public static final String UPDATEVACANCYDESIGNATION = "update vacancy_publish set job_id=?,updated_by=?,update_timestamp=? where company_id=? and job_id=? and location=?";
+	public static final String UPDATEVACANCYLOCATION = "update vacancy_publish set location=?,updated_by=?,update_timestamp=? where company_id=? and job_id=? and location=?";
+	public static final String UPDATEVACANCYDESCRIPTION = "update vacancy_publish set job_description=?,updated_by=?,update_timestamp=? where company_id=? and job_id=? and location=?";
+	public static final String UPDATEVACANCYSALARY = "update vacancy_publish set salary=?,updated_by=?,update_timestamp=? where company_id=? and job_id=? and location=?";
+	public static final String UPDATEVACANCYCOUNT = "update vacancy_publish set vacancy_count=?,vacancy_status=?,updated_by=?,update_timestamp=? where company_id=? and job_id=? and location=?";
 	public static final String RETRIEVECOMPANYBYLOCATION ="select company_details.company_name,company_details.website_url,job.job_designation,vacancy_publish.location,vacancy_publish.job_description,vacancy_publish.salary,vacancy_publish.vacancy_count,vacancy_publish.company_id,vacancy_publish.job_id from vacancy_publish,company_details,job where location=? and vacancy_status='available' and vacancy_publish.company_id= company_details.company_id and vacancy_publish.job_id= job.job_id";
 	public static final String FETCHJOBDESIGNATIONBYID = "select job_designation from job where job_id=?";
 	public static final String DELETEUSERTECHNOLOGY ="delete from user_technology_mapping where user_id=?";

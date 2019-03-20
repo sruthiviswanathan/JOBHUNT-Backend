@@ -1,6 +1,7 @@
 package com.zilker.onlinejobsearch.controller;
 
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 
@@ -62,17 +63,16 @@ public class CompanyController {
 	 */
 	@PostMapping("/companies")
 	public <T> ResponseEntity<?> AddNewCompany(@RequestBody CompanyDetails company) {	
-		ArrayList<CompanyDetails> companyDetails = null;
+		
 		try {
 			
-			
 			if(companyDelegate.addNewCompany(company)) {
-			companyDetails = companyDelegate.displayCompanies();
-			return responseUtil.successResponse(companyDetails);
+			return responseUtil.generateMessage("Success");
 			}else {
 				return responseUtil.generateMessage("Error Adding company");
 			}
 		} catch (ApplicationException e) {
+			
 			return responseUtil.errorResponse(e);
 		}
 		
@@ -83,10 +83,11 @@ public class CompanyController {
 	 */
 	@GetMapping("/company/{companyName}/{id}")
 	public <T> ResponseEntity<?> findCompany(@PathVariable("companyName") String companyName,
-			@PathVariable("id") int userId) {
-		ArrayList<Company> companyDetails = null;
+			@PathVariable("id") int userId) throws Exception {
+		Company companyDetails = null;
 		try {
-			int companyId = companyDelegate.fetchCompanyId(companyName);
+			String company = URLDecoder.decode(companyName,"UTF-8");
+			int companyId = companyDelegate.fetchCompanyId(company);
 			companyDetails = companyDelegate.retrieveVacancyByCompany(companyId, userId);
 			return responseUtil.successResponse(companyDetails);
 		
@@ -101,10 +102,11 @@ public class CompanyController {
 	 */
 	@GetMapping("/location/{location}/{id}")
 	public  <T> ResponseEntity<?> findByLocation(@PathVariable("location") String location,
-			@PathVariable("id") int userId) {
+			@PathVariable("id") int userId) throws Exception {
 		ArrayList<JobVacancy> retrieveByLocation = null;
 		try {
-			retrieveByLocation = companyDelegate.retrieveVacancyByLocation(location, userId);
+			String Location = URLDecoder.decode(location,"UTF-8");
+			retrieveByLocation = companyDelegate.retrieveVacancyByLocation(Location, userId);
 			return responseUtil.successResponse(retrieveByLocation);
 
 		} catch (ApplicationException e) {
@@ -117,10 +119,11 @@ public class CompanyController {
 	 * controller to view all reviews of a company
 	 */
 	@GetMapping("/company/reviews/{companyName}")
-	public <T> ResponseEntity<?> viewCompanyReviews(@PathVariable("companyName") String companyName) {
-		ArrayList<Company> reviews = null;
+	public <T> ResponseEntity<?> viewCompanyReviews(@PathVariable("companyName") String companyName)throws Exception {
+		Company reviews = null;
 		try {
-			int companyId = companyDelegate.fetchCompanyId(companyName);
+			String company = URLDecoder.decode(companyName,"UTF-8");
+			int companyId = companyDelegate.fetchCompanyId(company);
 			reviews = userDelegate.retrieveReview(companyId);
 			return responseUtil.successResponse(reviews);
 		} catch (ApplicationException e) {
@@ -132,10 +135,11 @@ public class CompanyController {
 	 * controller to view all reviews of all interview process of a company
 	 */
 	@GetMapping(value = "/company/interviews/{companyName}")
-	public <T> ResponseEntity<?>  viewReviewsOnInterviewProcess(@PathVariable("companyName") String companyName) {
-		ArrayList<Company> interviewProcess = null;
+	public <T> ResponseEntity<?>  viewReviewsOnInterviewProcess(@PathVariable("companyName") String companyName)throws Exception {
+		Company interviewProcess = null;
 		try {
-			int companyId = companyDelegate.fetchCompanyId(companyName);
+			String company = URLDecoder.decode(companyName,"UTF-8");
+			int companyId = companyDelegate.fetchCompanyId(company);
 			interviewProcess = userDelegate.retrieveInterviewProcess(companyId);
 			return responseUtil.successResponse(interviewProcess);
 		} catch (ApplicationException e) {
@@ -148,10 +152,11 @@ public class CompanyController {
 	 */
 	@PostMapping(value = "/company/rate")
 	public <T> ResponseEntity<?> RateACompany(@RequestParam("id") int userId, @RequestParam("company") String companyName,
-			@RequestBody CompanyReviews reviewsRating) {
-		ArrayList<Company> reviews = null;
+			@RequestBody CompanyReviews reviewsRating) throws Exception{
+		Company reviews = null;
 		try {
-			int companyId = companyDelegate.fetchCompanyId(companyName);
+			String company = URLDecoder.decode(companyName,"UTF-8");
+			int companyId = companyDelegate.fetchCompanyId(company);
 			if (userDelegate.reviewAndRateCompany(userId, companyId, reviewsRating)) {
 				reviews = userDelegate.retrieveReview(companyId);
 				return responseUtil.successResponse(reviews);
@@ -203,7 +208,7 @@ public class CompanyController {
 	 */
 	@GetMapping(value = "company/jobspublished/{id}")
 	public <T> ResponseEntity<?> ViewPublishedJobs(@PathVariable("id") int userId) {
-		ArrayList<Company> vacancyDetails = null;
+		Company vacancyDetails = null;
 		try {
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
 			vacancyDetails = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
@@ -218,14 +223,16 @@ public class CompanyController {
 	 */
 	@PutMapping(value = "company/jobspublished")
 	public <T> ResponseEntity<?> UpdatePublishedJobs(@RequestParam("id") int userId,
-			@RequestParam("jobdesignation") String jobDesignation, @RequestBody JobVacancy jobVacancy) {
+			@RequestParam("jobdesignation") String jobDesignation,@RequestParam("location") String oldLocation, @RequestBody JobVacancy jobVacancy) throws Exception{
 
-		ArrayList<Company> companies = null;
+		Company companies = null;
 		try {
 
-			int oldJobId = jobDelegate.fetchJobId(jobDesignation);
+			String job = URLDecoder.decode(jobDesignation,"UTF-8");
+			String location = URLDecoder.decode(oldLocation,"UTF-8");
+			int oldJobId = jobDelegate.fetchJobId(job);
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
-			if (userDelegate.UpdateVacancy(oldJobId, companyId, userId, jobVacancy)) {
+			if (userDelegate.UpdateVacancy(oldJobId,location,companyId, userId, jobVacancy)) {
 				companies = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
 				return responseUtil.successResponse(companies);
 			}else {
@@ -242,13 +249,15 @@ public class CompanyController {
 	 */
 	@DeleteMapping(value = "company/jobspublished")
 	public <T> ResponseEntity<?> DeletePublishedJobs(@RequestParam("id") int userId,
-			@RequestParam("jobdesignation") String jobDesignation) {
+			@RequestParam("jobdesignation") String jobDesignation,@RequestParam("location") String oldLocation) throws Exception {
 
-		ArrayList<Company> companies = null;
+		Company companies = null;
 		try {
-			int oldJobId = jobDelegate.fetchJobId(jobDesignation);
+			String job = URLDecoder.decode(jobDesignation,"UTF-8");
+			String location = URLDecoder.decode(oldLocation,"UTF-8");
+			int oldJobId = jobDelegate.fetchJobId(job);
 			int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
-			if (companyDelegate.removeVacancy(companyId, userId, oldJobId)) {
+			if (companyDelegate.removeVacancy(companyId,location,userId, oldJobId)) {
 				companies = companyDelegate.retrieveVacancyByCompanyAdmin(companyId);
 				return responseUtil.successResponse(companies);
 			}else {

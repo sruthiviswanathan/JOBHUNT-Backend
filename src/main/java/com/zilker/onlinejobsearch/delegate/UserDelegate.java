@@ -137,6 +137,8 @@ public class UserDelegate {
 			role = userdao.login(user);
 			login.setRole(role);
 			login.setUserId(user.getUserId());
+			String userName = fetchUserNameById(user.getUserId());
+			login.setUserName(userName);
 			if (role == 0) {
 				displayCompanies = companyDelegate.displayCompanies();
 				login.setCompanyDetails(displayCompanies);
@@ -147,6 +149,7 @@ public class UserDelegate {
 			} else if (role == 2) {
 
 				int companyId = fetchCompanyIdByAdmin(user.getUserId());
+				admin.add(companyId);
 				admin.add(companyDelegate.numberOfAppliedUsers(companyId));
 				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 				login.setAdminDetails(admin);
@@ -262,32 +265,31 @@ public class UserDelegate {
 
 	}
 
-	public ArrayList<Company> retrieveReview(int companyId) throws ApplicationException {
+	public Company retrieveReview(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
-		ArrayList<Company> companies = new ArrayList<Company>();
+		Company company = new Company();
 		ArrayList<CompanyReviews> companyReviews = null;
 		ArrayList<CompanyDetails> companyDetails = null;
 		try {
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			UserDAO userDao = new UserDAO();
 			companyReviews = userDao.retrieveReview(companyId);
-			companyDetails = companyDelegate.retrieveCompanyDetails(companyId);
-			Company company = new Company();
+			companyDetails = companyDelegate.retrieveCompanyDetails(companyId);	
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyReviews(companyReviews);
-			companies.add(company);
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
 		} 
 		catch (Exception e) {
 			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
-		return companies;
+		return company;
 	}
 
-	public ArrayList<Company> retrieveInterviewProcess(int companyId) throws ApplicationException {
+	public Company retrieveInterviewProcess(int companyId) throws ApplicationException {
 		// TODO Auto-generated method stub
-		ArrayList<Company> companies = new ArrayList<Company>();
+		//ArrayList<Company> companies = new ArrayList<Company>();
+		Company company = new Company();
 		ArrayList<CompanyDetails> companyDetails = new ArrayList<CompanyDetails>();
 		ArrayList<JobReviews> companyInterviews = new ArrayList<JobReviews>();
 		try {
@@ -295,10 +297,9 @@ public class UserDelegate {
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			companyInterviews = userDao.retrieveInterviewProcess(companyId);
 			companyDetails = companyDelegate.retrieveCompanyDetails(companyId);
-			Company company = new Company();
 			company.setCompanyDetails(companyDetails);
 			company.setCompanyInterviews(companyInterviews);
-			companies.add(company);
+			//companies.add(company);
 		}catch (SQLException e) {
 			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
 		} 
@@ -306,29 +307,29 @@ public class UserDelegate {
 			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
 
-		return companies;
+		return company;
 	}
 
-	public ArrayList<UserDetails> retrieveUserData(int userId) throws ApplicationException {
+	public UserDetails retrieveUserData(int userId) throws ApplicationException {
 		// TODO Auto-generated method stub
-		ArrayList<UserDetails> userDetails = new ArrayList<UserDetails>();
+		UserDetails user = new UserDetails();
 		ArrayList<User> userData = null;
 		try {
-			UserDetails user = new UserDetails();
+			
 			UserDAO userDao = new UserDAO();
 			UserTechnologyMapping userTechnologyMapping = new UserTechnologyMapping();
 			userData = userDao.retrieveUserData(userId);
 			ArrayList<UserTechnologyMapping> userTechnology = displayUserTechnologies(userTechnologyMapping, userId);
 			user.setUserTechnology(userTechnology);
 			user.setUser(userData);
-			userDetails.add(user);
+			
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorCodes.SQLERRORCODE,ErrorCodes.SQLERRORMESSAGE);
 		} 
 		catch (Exception e) {
 			throw new ApplicationException(ErrorCodes.GERNERICERRORCODE,ErrorCodes.GERNERICERRORMESSAGE);
 		}
-		return userDetails;
+		return user;
 	}
 
 	public boolean ifEmailAlreadyExists(String email) throws ApplicationException {
@@ -392,6 +393,7 @@ public class UserDelegate {
 							companyDelegate.insertIntoCompanyDetails(userId, companyId);
 						}
 					}
+					admin.add(companyId);
 					admin.add(companyDelegate.numberOfAppliedUsers(companyId));
 					admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 					login.setAdminDetails(admin);
@@ -736,7 +738,7 @@ public class UserDelegate {
 		return flag;
 	}
 
-	public boolean UpdateVacancy(int oldJobId, int companyId, int userId, JobVacancy jobVacancy)
+	public boolean UpdateVacancy(int oldJobId,String location,int companyId, int userId, JobVacancy jobVacancy)
 			throws ApplicationException {
 		// TODO Auto-generated method stub
 		boolean status = false;
@@ -748,6 +750,7 @@ public class UserDelegate {
 			user.setCurrentTime(dtf.format(now));
 			CompanyDelegate companyDelegate = new CompanyDelegate();
 			jobVacancy.setOldJobId(oldJobId);
+			jobVacancy.setOldLocation(location);
 			user.setUserId(userId);
 			jobVacancy.setCompanyId(companyId);
 			if (companyDelegate.updateVacancyJobId(jobVacancy, user)) {

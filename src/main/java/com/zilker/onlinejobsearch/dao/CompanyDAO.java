@@ -194,7 +194,7 @@ public class CompanyDAO {
 	/*
 	 * method for fetching job id given job designation.
 	 */
-	public boolean removeVacancy(int companyId,int userId,int jobId) throws SQLException {
+	public boolean removeVacancy(int companyId,String location,int userId,int jobId) throws SQLException {
 		boolean flag = false;
 		try {
 			connection = DButils.getConnection();
@@ -203,6 +203,7 @@ public class CompanyDAO {
 			preparestatement.setInt(1, userId);
 			preparestatement.setInt(2, companyId);
 			preparestatement.setInt(3, jobId);
+			preparestatement.setString(4, location);
 			preparestatement.executeUpdate();
 			flag = true;
 
@@ -486,6 +487,7 @@ public class CompanyDAO {
 			preparestatement.setString(3, user.getCurrentTime());
 			preparestatement.setInt(4, companyId);
 			preparestatement.setInt(5, company.getOldJobId());
+			preparestatement.setString(6, company.getOldLocation());
 			preparestatement.executeUpdate();
 			flag = true;
 
@@ -510,6 +512,7 @@ public class CompanyDAO {
 			preparestatement.setString(3, user.getCurrentTime());
 			preparestatement.setInt(4, companyId);
 			preparestatement.setInt(5, company.getOldJobId());
+			preparestatement.setString(6, company.getOldLocation());
 			preparestatement.executeUpdate();
 			flag = true;
 
@@ -534,6 +537,7 @@ public class CompanyDAO {
 			preparestatement.setString(3, user.getCurrentTime());
 			preparestatement.setInt(4, companyId);
 			preparestatement.setInt(5, company.getOldJobId());
+			preparestatement.setString(6, company.getOldLocation());
 			preparestatement.executeUpdate();
 			flag = true;
 
@@ -558,6 +562,7 @@ public class CompanyDAO {
 			preparestatement.setString(3, user.getCurrentTime());
 			preparestatement.setInt(4, companyId);
 			preparestatement.setInt(5, company.getOldJobId());
+			preparestatement.setString(6, company.getOldLocation());
 			preparestatement.executeUpdate();
 			flag = true;
 
@@ -583,6 +588,7 @@ public class CompanyDAO {
 			preparestatement.setString(4, user.getCurrentTime());
 			preparestatement.setInt(5, companyId);
 			preparestatement.setInt(6, company.getOldJobId());
+			preparestatement.setString(7, company.getOldLocation());
 			preparestatement.executeUpdate();
 			flag = true;
 

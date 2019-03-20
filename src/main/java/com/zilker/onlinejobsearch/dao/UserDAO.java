@@ -423,6 +423,7 @@ public class UserDAO {
 			preparestatement.setInt(5, user.getUserId());
 			preparestatement.setInt(6, user.getUserId());
 			preparestatement.executeUpdate();
+			flag=true;
 			preparestatement = connection.prepareStatement(QueryConstants.RETRIEVECOMPANYNAME);
 			preparestatement.setInt(1, company.getCompanyId());
 			resultset = preparestatement.executeQuery();

@@ -1,5 +1,6 @@
 package com.zilker.onlinejobsearch.controller;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +38,11 @@ public class JobController {
 	ResponseGeneratorUtil responseUtil;
 	
 	@GetMapping("/jobdesignation/{job}/{id}")
-	public <T> ResponseEntity<?> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) {
+	public <T> ResponseEntity<?> findJobs(@PathVariable("job") String jobDesignation,@PathVariable("id") int userId) throws Exception {
 		ArrayList<JobVacancy> vacancyDetails = null;
 		try {
-				int jobId = jobDelegate.fetchJobId(jobDesignation);
+				String job = URLDecoder.decode(jobDesignation,"UTF-8");
+				int jobId = jobDelegate.fetchJobId(job);	
 				if (jobId == 0) {
 					return responseUtil.errorResponse("noJobDesignation","invalid job Designation");
 				} else {
@@ -55,12 +57,12 @@ public class JobController {
 	}
 
 	@PostMapping(value = "/company/jobs/apply")
-	public ResponseEntity<?> ApplyJobs(@RequestParam("id") int userId,@RequestParam("email") String email,@RequestBody ApplyJob applyJobs){
+	public ResponseEntity<?> ApplyJobs(@RequestBody ApplyJob applyJobs){
 		try {
 			
 			int companyId = companyDelegate.fetchCompanyId(applyJobs.getCompanyName());
 			int jobId = jobDelegate.fetchJobId(applyJobs.getJobRole());
-			if (userDelegate.applyForJob(companyId,jobId,applyJobs.getLocation(),userId,email)) {
+			if (userDelegate.applyForJob(companyId,jobId,applyJobs.getLocation(),applyJobs.getUserId(),applyJobs.getEmail())) {
 				return responseUtil.generateMessage("Success");
 			}else { 
 			return responseUtil.generateMessage("Error");
@@ -105,12 +107,11 @@ public class JobController {
 
 	@PostMapping(value = "/jobs")
 	public <T> ResponseEntity<?> AddNewJobDesignation(@RequestParam("id") int userId,@RequestBody JobMapping jobMapping){
-		ArrayList<JobMapping> job = null;
+		
 		try {
 		
 				if (jobDelegate.addNewJob(jobMapping, userId)) {
-					job = jobDelegate.displayJobs();
-					return responseUtil.successResponse(job);
+					return responseUtil.generateMessage("Success");
 				} else {
 				
 					return responseUtil.errorResponse("Error","Error Adding jobDesignation");

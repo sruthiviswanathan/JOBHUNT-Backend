@@ -3,12 +3,18 @@ package com.zilker.onlinejobsearch.beans;
 public class JobVacancy {
 	
 	private int companyId,jobId,vacancyCount,flag,oldJobId;
-	private String location,jobDescription,vacancyStatus,companyName,jobRole;
+	private String location,oldLocation,jobDescription,vacancyStatus,companyName,jobRole;
 	private float salary;
 	
 	
 	
 	
+	public String getOldLocation() {
+		return oldLocation;
+	}
+	public void setOldLocation(String oldLocation) {
+		this.oldLocation = oldLocation;
+	}
 	public int getOldJobId() {
 		return oldJobId;
 	}

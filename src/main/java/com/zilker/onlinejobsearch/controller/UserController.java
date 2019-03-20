@@ -44,7 +44,7 @@ public class UserController {
 	/*
 	 * controller that does login process and redirects user based on their role
 	 */
-	@GetMapping(value = "/users")
+	@PostMapping(value = "/userslogin")
 	public <T> ResponseEntity<?> loginProcess(@RequestBody User user) {
 		LoginResponse loginResponse = new LoginResponse();
 		try {
@@ -115,7 +115,7 @@ public class UserController {
 	 */
 	@GetMapping(value = "/users/{id}")
 	public <T> ResponseEntity<?> ViewUsers(@PathVariable("id")int userId) {
-		ArrayList<UserDetails> userDetails = null;
+		UserDetails userDetails = null;
 		try {
 				userDetails = userDelegate.retrieveUserData(userId);
 				return responseUtil.successResponse(userDetails);
@@ -163,6 +163,7 @@ public class UserController {
 		ArrayList<Integer> admin = new ArrayList<Integer>();
 		try {
 				int companyId = userDelegate.fetchCompanyIdByAdmin(userId);
+				admin.add(companyId);
 				admin.add(companyDelegate.numberOfAppliedUsers(companyId));
 				admin.add(companyDelegate.numberOfVacancyPublished(companyId));
 				return responseUtil.successResponse(admin);
